@@ -1,4 +1,5 @@
 from Levenshtein import distance as lev
+import phonetics
 
 KeyName = 'johndeer'
 AmbiguousName = 'jondeere'
@@ -6,10 +7,13 @@ AmbiguousName = 'jondeere'
 LevenshteinDistance = lev(KeyName, AmbiguousName)
 print(LevenshteinDistance)
 
-import phonetics
+PhoneticCodeKey = phonetics.dmetaphone(KeyName)
+print(PhoneticCodeKey)
 
-PhoneticCode = phonetics.dmetaphone('lindseyreich')
-print(PhoneticCode)
+PhoneticCodeAmbiguous = phonetics.dmetaphone(AmbiguousName)
+print(PhoneticCodeAmbiguous)
+
+
 
 
 
