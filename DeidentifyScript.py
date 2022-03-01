@@ -3,6 +3,7 @@ This code will take 2 .csv files for deidentification and return a de-identified
 file 1 is a .csv formatted like qualtrics outputs of survey responses
 file 2 is a .csv with 1 column of key numeric values, and following columns with names (row matches key numeric value)
 make a change
+make a second change
 """
 
 #define the main function
@@ -18,7 +19,7 @@ def replacingFunc(dataFileLocation,keyLocation,outputFileName):
     #read in the key file to a list
     key = pd.read_csv(keyLocation, header = None)
     key = key.values.tolist()
-    
+
     #concatenate the names in the open responses
     for i in range(len(data)):
         
