@@ -13,6 +13,10 @@ print(PhoneticCodeKey)
 PhoneticCodeAmbiguous = phonetics.dmetaphone(AmbiguousName)
 print(PhoneticCodeAmbiguous)
 
+if PhoneticCodeKey == PhoneticCodeAmbiguous:
+    print("Consolidate")
+
+
 
 
 
