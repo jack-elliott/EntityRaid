@@ -68,13 +68,13 @@ def replacingFunc(dataFileLocation,keyLocation,outputFileName):
     return(key,data)
     
 #This should be the absolute path file location of the qualtrics data file
-dataFileLocation = "C:/Users/Elliott/Desktop/Primary+Name+Generator+Survey_September+13,+2021_18.53 (1).csv"
+dataFileLocation = '/Users/adamweaver/Desktop/SNA/Primary Name Generator Survey_March 1, 2022_21.57.csv'
 
 #This should be the file location on your computer of the key .csv
-keyLocation = "C:/Users/Elliott/Desktop/Key.csv"
+keyLocation = '/Users/adamweaver/Desktop/SNA/Key_TestCSV.csv'
 
 #Define the output name of interest
-outputFileName = "Test1"
+outputFileName = "BasicTest"
 
 #this will just run the script
 key,data = replacingFunc(dataFileLocation,keyLocation,outputFileName)
