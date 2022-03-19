@@ -24,8 +24,7 @@ def addNewNames(dataFileLocation, keyLocation, outputFileName):
 
     for i in range(len(data)):  # loop through the whole list of data
         for j in range(len(data[0])):  # loop through each element per row
-            if isinstance(data[i][j],
-                          str):  # check if each element is a string, if so convert to upper and remove whitespace
+            if isinstance(data[i][j], str):  # check if each element is a string, if so convert to upper and remove whitespace
                 data[i][j] = data[i][j].lower()
                 data[i][j] = data[i][j].replace(" ", "")
 
@@ -79,3 +78,27 @@ key, data = addNewNames(dataFileLocation, keyLocation, outputFileName)
 
 #   -I tried both the len(m) and len(l), and they produced the same results
 #    In these iterations, the third and forth columns in the key are marked as "nan"
+
+
+
+# Comment the code more
+# Create an artificial data set to work with
+# Each part should have its own file
+# fix outputFileName thingy
+
+# STAGE 1 PART 1
+# Just registry names
+# *KEY IS BLANK
+# Concatenate and space eliminate the data in the registry
+# If two names match on the registry...DO NOT add to key
+# Read in a registry, and any new values get added to the key (doesn't use matches)
+
+# STAGE 1 PART 2
+# Add any new of participants' own names (found in interaction data) to the key
+
+# STAGE 1 PART 3
+# In both cells, more than one character string
+
+# Then, build main function
+
+
