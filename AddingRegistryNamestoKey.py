@@ -96,8 +96,13 @@ registryLocation = '/Users/adamweaver/Desktop/SNA/SyntheticRegistry.csv'
 key, data = addRegistryNames(dataFileLocation, keyLocation, registryLocation)
 
 #
-# 45 minutes + 7:57-9:35
+# 45 minutes + 7:57-9:35 (2.38333 hours)
 # 1 hour 50 mins
 # 2 hours 15 minutes
 # 2 hours
-# 10 minutes + 10:51-
+# 10 minutes + 10:51-11:30 (0.81666 hours)
+# 12:30-1:54 (1.4 hours)
+#9:06-9:09
+# 11:39-12:34 (0.91666 hours)
+# 1 hour + 5:31 - 5:47, 7:40-8:34 (2 hours 5 minutes)
+# 7:55-
