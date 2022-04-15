@@ -25,10 +25,10 @@ def looper(ParticipantName,key):
         for j in range(len(key[i])-2):
                        
             #Check the first name in the key
-            if ParticipantName[0] == key[i][2*j-1]:
+            if ParticipantName[0] == key[i][j+1]:
                 
                 #Check the second name IF the first name matches
-                if ParticipantName[1] == key[i][2*j+2]:
+                if ParticipantName[1] == key[i][j+2]:
                     
                     #If the name is already in the key, return false (makes sense later)
                     return False
