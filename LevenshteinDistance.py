@@ -4,8 +4,8 @@ import phonetics
 
 # Right now, I choose these values. The code is based on contrasting two string values
 # Eventually, I will need to import these values from the key and interaction data
-KeyName = 'christianboss'
-AmbiguousName = 'chrisboss'
+KeyName = 'johndeer'
+AmbiguousName = 'jondeare'
 
 # This is a simple Levenshtein Distance calculation from the library. I print this value to confirm its validity
 LevenshteinDistance = lev(KeyName, AmbiguousName)

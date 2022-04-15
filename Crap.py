@@ -21,7 +21,6 @@ def addRegistryNames(keyLocation, registryLocation):
         for b in range(len(registry[0])):
             if isinstance(registry[a][b], str):
                 registry[a][b] = registry[a][b].lower()
-                registry[a][b] = registry[a][b].replace(" ", " ")
 
 # Set new lists for a registry without duplicates (NewRegistry) and a place to record duplicate names (Duplicates)
     NewRegistry = []
@@ -69,7 +68,7 @@ def addRegistryNames(keyLocation, registryLocation):
 
 # Import csv that will write the key to a spreadsheet
     import csv
-    with open('AddingRegistryNamesfromInteractionDatatoKey68.csv', 'w', encoding='UTF8', newline='') as f:
+    with open('AddingRegistryNamesfromInteractionDatatoKey69.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
 
         # write the .csv
@@ -86,3 +85,5 @@ registryLocation = '/Users/adamweaver/Desktop/SNA/SyntheticRegistry.csv'
 
 # Run the script
 key = addRegistryNames(keyLocation, registryLocation)
+
+# 4:47-
