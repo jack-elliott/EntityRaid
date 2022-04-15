@@ -28,18 +28,18 @@ def addParticipantsNames(keyLocation, dataFileLocation):
     ParticipantNames = dfParticipantNames.values.tolist()
     print(ParticipantNames)
 
-    for i in range(len(key)):
-        for j in range(len(key[0])-2):
 
+    for l in range(len(ParticipantNames)):
+        # now in each row, check each column in the key, starting after the numeric value
+        for m in range(len(ParticipantNames[l]) - 1):
+            for i in range(len(key)):
+                for j in range(len(key[i])-2):
             # now that we are at each data list element, check the key value rows
-            for l in range(len(ParticipantNames)):
-
-                # now in each row, check each column in the key, starting after the numeric value
-                for m in range(len(ParticipantNames[l])-1):
-
-                    if key[i][j+1] != ParticipantNames[l][m]:
-                        if key[i][j+2] != ParticipantNames[l][m+1]:
-                            key.append([ParticipantNames[l][m], ParticipantNames[l][m+1]])
+                    if ParticipantNames[l][m] != key[i][j+1]:
+                        if ParticipantNames[l][m+1] != key[i][j+2]:
+                            key.append([4, ParticipantNames[l][m], ParticipantNames[l][m+1]])
+                print(ParticipantNames[l][m])
+                print(key[i][j+1])
     print(key)
 
                     # Check if the key value matches the data value, if so reassign, if not contnue
@@ -48,7 +48,7 @@ def addParticipantsNames(keyLocation, dataFileLocation):
 
 
     # Create a set out of the registry data
-    ParticipantSet = set()
+   # ParticipantSet = set()
 
     # Fill the registry set with values from the FinalRegistry list created above
   #  for Names in ParticipantNames:
@@ -77,7 +77,7 @@ def addParticipantsNames(keyLocation, dataFileLocation):
 
     # Import csv that will write the key to a spreadsheet
     import csv
-    with open('AddingParticipantsOwnNames15.csv', 'w', encoding='UTF8', newline='') as f:
+    with open('AddingParticipantsOwnNames17.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
 
         # write the .csv
