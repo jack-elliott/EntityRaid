@@ -2,31 +2,34 @@
 from Levenshtein import distance as lev
 import phonetics
 
-# Right now, I choose these values. The code is based on contrasting two string values
+def Levenshtein():
+    ## Right now, I choose these values. The code is based on contrasting two string values
 # Eventually, I will need to import these values from the key and interaction data
-KeyName = 'johndeer'
-AmbiguousName = 'jondeare'
+    KeyName = 'johndeer'
+    AmbiguousName = 'jonathandeare'
 
 # This is a simple Levenshtein Distance calculation from the library. I print this value to confirm its validity
-LevenshteinDistance = lev(KeyName, AmbiguousName)
-print(LevenshteinDistance)
+    LevenshteinDistance = lev(KeyName, AmbiguousName)
+    print(LevenshteinDistance)
 
 # This calculates the phonetic key according to the double metaphone for the KEY name
-PhoneticCodeKey = phonetics.dmetaphone(KeyName)
-print(PhoneticCodeKey)
+    PhoneticCodeKey = phonetics.dmetaphone(KeyName)
+    print(PhoneticCodeKey)
 
 # This calculates the phonetic key according to the double metaphone for the AMBIGUOUS name
-PhoneticCodeAmbiguous = phonetics.dmetaphone(AmbiguousName)
-print(PhoneticCodeAmbiguous)
+    PhoneticCodeAmbiguous = phonetics.dmetaphone(AmbiguousName)
+    print(PhoneticCodeAmbiguous)
+
+Levenshtein()
 
 # This if statement serves as the consolidation parameters.
 # Eventually, I want to confirm the effectiveness of these measures through reading related research
-if PhoneticCodeKey == PhoneticCodeAmbiguous or LevenshteinDistance == 1:
-    print("Consolidate")
+#if PhoneticCodeKey == PhoneticCodeAmbiguous or LevenshteinDistance == 1:
+   # print("Consolidate")
 
 # If the name doesn't meet our consolidation parameters, it will get send to a clustering process, right?
-else:
-    print("Send to hierarchical clustering??")
+#else:
+   # print("Send to hierarchical clustering??")
 
 # QUESTIONS:
 # 1. The Levenshtein Distance is great, but doesn't account for potential nicknames

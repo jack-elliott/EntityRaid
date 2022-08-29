@@ -85,5 +85,3 @@ registryLocation = '/Users/adamweaver/Desktop/SNA/SyntheticRegistry.csv'
 
 # Run the script
 key = addRegistryNames(keyLocation, registryLocation)
-
-# 4:47-
