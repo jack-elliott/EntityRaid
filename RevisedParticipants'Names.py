@@ -67,7 +67,7 @@ def addParticipantsNames(keyLocation, dataFileLocation):
     #loop through each of the raw data rows
     for l in range(len(ParticipantNames)):
         
-        #loop through each raw data column (set of names) correspaonding to a given name not, first names are in cols 1,3,5,... last names col. 2,4,6,...
+        #loop through each raw data column (set of names) corresponding to a given name not, first names are in cols 1,3,5,... last names col. 2,4,6,...
         for m in range(len(ParticipantNames[l]) - 1):
         
                 #identify the name to be checked for in the key

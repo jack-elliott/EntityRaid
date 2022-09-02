@@ -1,25 +1,24 @@
-# define the main function
 def replacingFunc(dataFileLocation, keyLocation, outputFileName):
-    # import libraries necessary and assign aliases
+    # Import libraries necessary and assign aliases
     import pandas as pd
 
-    # read in the data file of interest to a list
+    # Read in the data file of interest to a list
     data = pd.read_csv(dataFileLocation, header=None)
     data = data.values.tolist()
 
-    # read in the key file to a list
+    # Read in the key file to a list
     key = pd.read_csv(keyLocation, header=None)
     key = key.values.tolist()
 
     # concatenate the names in the open responses
     for i in range(len(data)):
 
-        # concatenate the names and then delate the column value of the last name for the first 10 responses
+        # concatenate the names and then delete the column value of the last name for the first 10 responses
         for p in range(10):
             data[i][25 + p] = str(data[i][25 + p]) + str(data[i][26 + p])
             del data[i][26 + p]
 
-        # concatenate the names and then delate the column value of the last name for the second 10 responses
+        # concatenate the names and then delete the column value of the last name for the second 10 responses
         for p in range(10):
             data[i][62 + p] = str(data[i][62 + p]) + str(data[i][63 + p])
             del data[i][63 + p]
