@@ -1,4 +1,4 @@
-def replacingFunc(dataFileLocation, keyLocation, outputFileName):
+def replacingFunc(dataFileLocation, keyLocation):
     # Import libraries necessary and assign aliases
     import pandas as pd
 
@@ -11,20 +11,20 @@ def replacingFunc(dataFileLocation, keyLocation, outputFileName):
     key = key.values.tolist()
 
     # concatenate the names in the open responses
-    for i in range(len(data)):
+    #for i in range(len(data)):
 
         # concatenate the names and then delete the column value of the last name for the first 10 responses
-        for p in range(10):
-            data[i][25 + p] = str(data[i][25 + p]) + str(data[i][26 + p])
-            del data[i][26 + p]
+        #for p in range(10):
+         #   data[i][25 + p] = str(data[i][25 + p]) + str(data[i][26 + p])
+          #  del data[i][26 + p]
 
         # concatenate the names and then delete the column value of the last name for the second 10 responses
-        for p in range(10):
-            data[i][62 + p] = str(data[i][62 + p]) + str(data[i][63 + p])
-            del data[i][63 + p]
+       # for p in range(10):
+           # data[i][62 + p] = str(data[i][62 + p]) + str(data[i][63 + p])
+           # del data[i][63 + p]
 
-        for p in range(5):
-            data[i][120 + p] = str(data[i][120 + p]) + str(data[i][121 + p])
+       # for p in range(5):
+            #data[i][120 + p] = str(data[i][120 + p]) + str(data[i][121 + p])
 
     # Convert all of the data strings to just lowercase and remove all white space to make life easier
     for i in range(len(data)):  # loop through the whole list of data
@@ -52,7 +52,7 @@ def replacingFunc(dataFileLocation, keyLocation, outputFileName):
 
     # write the data file to a .csv
     import csv
-    with open('RevisedTesterIteration2.csv', 'w', encoding='UTF8', newline='') as f:
+    with open('PleaseWork1.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
 
         # write the .csv
@@ -61,15 +61,11 @@ def replacingFunc(dataFileLocation, keyLocation, outputFileName):
     # spit these out so we can check to make sure deals work
     return (key, data)
 
-
 # This should be the absolute path file location of the qualtrics data file
-dataFileLocation = '/Users/adamweaver/Desktop/SNA/Primary Name Generator Survey_March 1, 2022_21.57.csv'
+dataFileLocation = '/Users/adamweaver/Desktop/SNA/SyntheticInteractionData.csv'
 
 # This should be the file location on your computer of the key .csv
-keyLocation = '/Users/adamweaver/Desktop/SNA/Key1.csv'
-
-# Define the output name of interest
-outputFileName = "BasicTest"
+keyLocation = '/Users/adamweaver/Desktop/SNA/SyntheticKey(Fall2022).csv'
 
 # this will just run the script
-key, data = replacingFunc(dataFileLocation, keyLocation, outputFileName)
+key, data = replacingFunc(dataFileLocation, keyLocation)

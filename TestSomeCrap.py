@@ -1,17 +1,10 @@
-from Levenshtein import distance as lev
-import phonetics
-import pandas as pd
+name = ['bob', 'weaver-nielson']
 
-def convertTuple(tup):
+def hyphenDetector(string):
+    for i in range(0, len(string)):
+        if string[i] == '-':
+            return True
 
-    # initialize an empty string
-    str = ''
-    for item in tup:
-        str = str + item
-
-    return str
-
-
-score = lev("Adam Weaver", "Adumb Weever")
-print(score)
-
+bob = hyphenDetector(name[1])
+if bob:
+    print("This is working")

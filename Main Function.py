@@ -48,9 +48,47 @@ def addRegistryNames(keyLocation, registryLocation):
         else:
             Duplicates.append(i)
 
+    print("Names that are duplicates in the registry are as follows", Duplicates)
 # If we want to export the duplicate names, we have to do it here (duplicates list is cleared on Line 40)
 # Remove any names that had duplicates using the duplicates list and the NewRegistry
     FinalRegistry = [x for x in NewRegistry if not x in Duplicates or Duplicates.remove(x)]
+
+    def spaceCounter(string):
+
+        # counter
+        count = 0
+
+        # loop for search each index
+        for i in range(0, len(string)):
+
+            # Check each char
+            # is blank or not
+            if string[i] == " ":
+                count += 1
+
+        return count
+
+    def hyphenDetector(string):
+        for i in range(0, len(string)):
+            if string[i] == '-':
+                return True
+
+    MultipleLastNames = []
+
+    for name in FinalRegistry:
+        spaceCount = spaceCounter(name[1])
+        hyphen = hyphenDetector(name[1])
+        if spaceCount >= 1:
+            MultipleLastNames.append(name)
+        if hyphen:
+            MultipleLastNames.append(name)
+
+    for names in MultipleLastNames:
+        if names in FinalRegistry:
+            FinalRegistry.remove(names)
+
+    print("Names that have multiple last name components are as follows:", MultipleLastNames)
+    # WE PROBABLY WANT TO REMOVE HYPHENATED NAMES/DOUBLE LAST NAMES HERE!
 
     for l in range(len(FinalRegistry)):
         for m in range(len(FinalRegistry[l]) - 1):
@@ -64,10 +102,9 @@ def addRegistryNames(keyLocation, registryLocation):
             # If the name is not in the key, add the name to the key
             if check:
                 key.append([len(key) + 1, FinalRegistry[l][m], FinalRegistry[l][m + 1]])
-    print(key)
 
     import csv
-    with open('Key_Registry.csv', 'w', encoding='UTF8', newline='') as f:
+    with open('Key_Registry11.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
 
         # write the .csv
@@ -81,6 +118,7 @@ def addParticipantsNames(keyLocation, dataFileLocation):
 
     import pandas as pd
     key = pd.read_csv(keyLocation, header=None)
+    key.fillna('none', inplace=True)
     key = key.values.tolist()
 
     # read in the data file of interest to a list
@@ -104,6 +142,7 @@ def addParticipantsNames(keyLocation, dataFileLocation):
     dfParticipantNames[[0, 1]] = dfParticipantNames[0].str.split(' ', expand=True)
     ParticipantNames = dfParticipantNames.values.tolist()
 
+
     # loop through each of the raw data rows
     for l in range(len(ParticipantNames)):
 
@@ -119,8 +158,17 @@ def addParticipantsNames(keyLocation, dataFileLocation):
             # If the name is not in the key, add the name to the key
             if check:
                 key.append([len(key) + 1, ParticipantNames[l][m], ParticipantNames[l][m + 1]])
+
+    for i in range(len(key)):
+        for j in range(len(key[i])):
+            if len(key[i]) < len(max(key, key=len)):
+                for o in range(len(max(key, key=len))-len(key[i])):
+                    key[i].append("none")
+
+
+
     import csv
-    with open('KeyAfterParticipantNames.csv', 'w', encoding='UTF8', newline='') as f:
+    with open('KeyAfterParticipantNames11.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
 
         # write the .csv
@@ -141,22 +189,6 @@ def replacingFunc(dataFileLocation, keyLocation):
     key = pd.read_csv(keyLocation, header=None)
     key = key.values.tolist()
 
-    # concatenate the names in the open responses
-    for i in range(len(data)):
-
-        # concatenate the names and then delete the column value of the last name for the first 10 responses
-        for p in range(10):
-            data[i][25 + p] = str(data[i][25 + p]) + str(data[i][26 + p])
-            del data[i][26 + p]
-
-        # concatenate the names and then delete the column value of the last name for the second 10 responses
-        for p in range(10):
-            data[i][62 + p] = str(data[i][62 + p]) + str(data[i][63 + p])
-            del data[i][63 + p]
-
-        for p in range(5):
-            data[i][120 + p] = str(data[i][120 + p]) + str(data[i][121 + p])
-
     # Convert all of the data strings to just lowercase and remove all white space to make life easier
     for i in range(len(data)):  # loop through the whole list of data
         for j in range(len(data[0])):  # loop through each element per row
@@ -165,25 +197,25 @@ def replacingFunc(dataFileLocation, keyLocation):
                 data[i][j] = data[i][j].lower()
                 data[i][j] = data[i][j].replace(" ", "")
 
-    # Now loop through the entier list of data, and replace values in the key with the numeric values in the first index of each row
+    # Now, make the key all lowercase so that matching will work in the following logic
+    for a in range(len(key)):
+        for b in range(len(key[0])):
+            if isinstance(key[a][b], str):
+                key[a][b] = key[a][b].lower()
+
+    # Loop through the key and data and replace accordingly
     for i in range(len(data)):
-        for j in range(len(data[0])):
-
-            # now that we are at each data list element, check the key value rows
+        for j in range(0, len(data[0]) - 1):
             for l in range(len(key)):
-
-                # now in each row, check each column in the key, starting after the numeric value
-                for m in range(len(key[l]) - 1):
-
-                    mCheck = m + 1  # make sure to skip the first value
-
-                    # Check if the key value matches the data value, if so reassign, if not contnue
-                    if data[i][j] == key[l][mCheck]:
-                        data[i][j] = key[l][0]
+                for m in range(len(key[l]) - 2):
+                    if data[i][j] == key[l][m + 1]:
+                        if data[i][j+1] == key[l][m + 2]:
+                            data[i][j] = key[l][0]
+                            data[i][j+1] = key[l][0]
 
     # write the data file to a .csv
     import csv
-    with open('DataforComparison.csv', 'w', encoding='UTF8', newline='') as f:
+    with open('DataforComparison11.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
 
         # write the .csv
@@ -228,6 +260,7 @@ def compare(KeyName, AmbiguousName):
     return [LevenshteinDistance, PhoneticDifference]
 
 def compareKeytoData(keyLocation, dataFileLocation):
+
     # read in the key file to a list
     import pandas as pd
     key = pd.read_csv(keyLocation, header=None)
@@ -273,7 +306,7 @@ def compareKeytoData(keyLocation, dataFileLocation):
 
     # Write the "CompareList" to a csv file
     import csv
-    with open('CompleteTrialIteration1.csv', 'w', encoding='UTF8', newline='') as f:
+    with open('CompleteTrialIteration11.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
 
         # write the .csv
@@ -284,28 +317,43 @@ def compareKeytoData(keyLocation, dataFileLocation):
 
 ########################################### MAIN FUNCTION LOGIC ########################################################
 
-# File location on the computer of the key (has to be .csv format)
-keyLocation = '/Users/adamweaver/Desktop/SNA/SyntheticKey.csv'
+
+
+# This should be the absolute path file location of the qualtrics data file
+dataFileLocation = '/Users/adamweaver/Desktop/SNA/SyntheticInteractionData.csv'
+
+# This should be the file location on your computer of the key .csv
+keyLocation = '/Users/adamweaver/Desktop/SNA/SyntheticKey(Fall2022).csv'
 
 # This should be the absolute path file location of the registry data file
 registryLocation = '/Users/adamweaver/Desktop/SNA/SyntheticRegistry.csv'
-
-# This should be the absolute path file location of the qualtrics data file
-dataFileLocation = '/Users/adamweaver/Desktop/SNA/SyntheticInteractionDataNumbers.csv'
 
 # EVENTUALLY I NEED TO MAKE COPIES OF THE REAL DATA HERE
 
 key = addRegistryNames(keyLocation, registryLocation)
 
-keyLocation = 'Key_Registry.csv'
+keyLocation = 'Key_Registry11.csv'
 
 key = addParticipantsNames(keyLocation, dataFileLocation)
 
-keyLocation = 'KeyAfterParticipantNames.csv'
+keyLocation = 'KeyAfterParticipantNames11.csv'
 
-data = replacingFunc(dataFileLocation, key)
+data = replacingFunc(dataFileLocation, keyLocation)
 
-dataFileLocation = 'DataforComparison.csv'
+dataFileLocation = 'DataforComparison11.csv'
 
 compareKeytoData(keyLocation, dataFileLocation)
 
+# NEED TO ADD COUNTERS:
+        # THIS INCLUDES:
+                # HOW MANY GET ADDED/RESOLVED AT EACH STAGE
+                # HOW MANY NAMES TO NUMBERS ARE LEFT AFTER REPLACEFUNC IS FINISHED
+
+# NEED TO ADD USER INPUT:
+         # THIS INCLUDES:
+                # LOCATIONS FOR DATA FILE, REGISTRY, AND KEY
+                # COLUMN NUMBERS
+
+
+# ASSUMPTIONS:
+        # REGISTRY IS FORMATTED WITH FIRST AND LAST NAME IN THE 0th COLUMN WITH A SPACE IN BETWEEEN THEM
