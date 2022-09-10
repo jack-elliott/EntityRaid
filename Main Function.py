@@ -31,6 +31,15 @@ def addRegistryNames(keyLocation, registryLocation):
     registry = pd.read_csv(registryLocation, header=None)
     registry = registry.values.tolist()
 
+
+    firstcolumn = [i[0] for i in registry]
+    firstcolumnsplit = []
+    for names in firstcolumn:
+        newcolumns = names.split(' ', 1)
+        firstcolumnsplit.append(newcolumns)
+
+    registry = firstcolumnsplit
+
     # Turn the registry to all lowercase characters
     for a in range(len(registry)):
         for b in range(len(registry[0])):
@@ -48,7 +57,7 @@ def addRegistryNames(keyLocation, registryLocation):
         else:
             Duplicates.append(i)
 
-    print("Names that are duplicates in the registry are as follows", Duplicates)
+    print("There are", len(Duplicates), "duplicate names in the registry. These include:", Duplicates)
 # If we want to export the duplicate names, we have to do it here (duplicates list is cleared on Line 40)
 # Remove any names that had duplicates using the duplicates list and the NewRegistry
     FinalRegistry = [x for x in NewRegistry if not x in Duplicates or Duplicates.remove(x)]
@@ -87,9 +96,10 @@ def addRegistryNames(keyLocation, registryLocation):
         if names in FinalRegistry:
             FinalRegistry.remove(names)
 
-    print("Names that have multiple last name components are as follows:", MultipleLastNames)
+    print("There are", len(MultipleLastNames), "students with multiple last names. These include:", MultipleLastNames)
     # WE PROBABLY WANT TO REMOVE HYPHENATED NAMES/DOUBLE LAST NAMES HERE!
 
+    print("There are", len(FinalRegistry), "names in the registry that have been added to the key.")
     for l in range(len(FinalRegistry)):
         for m in range(len(FinalRegistry[l]) - 1):
 
@@ -104,7 +114,7 @@ def addRegistryNames(keyLocation, registryLocation):
                 key.append([len(key) + 1, FinalRegistry[l][m], FinalRegistry[l][m + 1]])
 
     import csv
-    with open('Key_Registry11.csv', 'w', encoding='UTF8', newline='') as f:
+    with open('Key_Registry13.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
 
         # write the .csv
@@ -143,6 +153,7 @@ def addParticipantsNames(keyLocation, dataFileLocation):
     ParticipantNames = dfParticipantNames.values.tolist()
 
 
+
     # loop through each of the raw data rows
     for l in range(len(ParticipantNames)):
 
@@ -165,10 +176,11 @@ def addParticipantsNames(keyLocation, dataFileLocation):
                 for o in range(len(max(key, key=len))-len(key[i])):
                     key[i].append("none")
 
-
+    print('There are', len(ParticipantNames[0]), "participant names (not in the registry) that have been added to the key.")
+    print("The total size of the key after being initialized is", len(key))
 
     import csv
-    with open('KeyAfterParticipantNames11.csv', 'w', encoding='UTF8', newline='') as f:
+    with open('KeyAfterParticipantNames13.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
 
         # write the .csv
@@ -204,18 +216,28 @@ def replacingFunc(dataFileLocation, keyLocation):
                 key[a][b] = key[a][b].lower()
 
     # Loop through the key and data and replace accordingly
+    resolvedcount = 0
     for i in range(len(data)):
         for j in range(0, len(data[0]) - 1):
             for l in range(len(key)):
                 for m in range(len(key[l]) - 2):
                     if data[i][j] == key[l][m + 1]:
                         if data[i][j+1] == key[l][m + 2]:
+                            resolvedcount += 1
                             data[i][j] = key[l][0]
                             data[i][j+1] = key[l][0]
+    print("The number of names resolved in the exact replacement stage is:", resolvedcount)
 
+    ambiguouscount = 0
+    for i in range(len(data)):
+        for j in range(len(data[0])):
+            if isinstance(data[i][j], str):
+                ambiguouscount += 1
+
+    print("The number of remaining names (ambiguous) is:", (ambiguouscount/2) - resolvedcount)
     # write the data file to a .csv
     import csv
-    with open('DataforComparison11.csv', 'w', encoding='UTF8', newline='') as f:
+    with open('DataforComparison13.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
 
         # write the .csv
@@ -306,7 +328,7 @@ def compareKeytoData(keyLocation, dataFileLocation):
 
     # Write the "CompareList" to a csv file
     import csv
-    with open('CompleteTrialIteration11.csv', 'w', encoding='UTF8', newline='') as f:
+    with open('CompleteTrialIteration13.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
 
         # write the .csv
@@ -332,15 +354,15 @@ registryLocation = '/Users/adamweaver/Desktop/SNA/SyntheticRegistry.csv'
 
 key = addRegistryNames(keyLocation, registryLocation)
 
-keyLocation = 'Key_Registry11.csv'
+keyLocation = 'Key_Registry13.csv'
 
 key = addParticipantsNames(keyLocation, dataFileLocation)
 
-keyLocation = 'KeyAfterParticipantNames11.csv'
+keyLocation = 'KeyAfterParticipantNames13.csv'
 
 data = replacingFunc(dataFileLocation, keyLocation)
 
-dataFileLocation = 'DataforComparison11.csv'
+dataFileLocation = 'DataforComparison13.csv'
 
 compareKeytoData(keyLocation, dataFileLocation)
 
