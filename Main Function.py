@@ -1,4 +1,23 @@
 #============================================ DEFINE FUNCTIONS =======================================================
+# I should have some general instructions in here
+# Include that the key formatting and positioning should be exactly similar to ours
+# Interaction data can vary in positioning, but not in formatting
+
+# This should be the absolute path file location of the qualtrics data file
+dataFileLocation = '/Users/adamweaver/Desktop/SNA/SyntheticInteractionData.csv'
+
+# This should be the file location on your computer of the key .csv
+keyLocation = '/Users/adamweaver/Desktop/SNA/SyntheticKey(Fall2022).csv'
+
+# This should be the absolute path file location of the registry data file
+registryLocation = '/Users/adamweaver/Desktop/SNA/SyntheticRegistry.csv'
+
+ParticipantColumn = 0
+NicknameColumn = 1
+PeerColumnGroup1 = [2, 13]
+PeerColumnGroup2 = 0
+RowStart = 3
+
 
 def looper(ParticipantName, key):
     # now check each key row
@@ -114,7 +133,7 @@ def addRegistryNames(keyLocation, registryLocation):
                 key.append([len(key) + 1, FinalRegistry[l][m], FinalRegistry[l][m + 1]])
 
     import csv
-    with open('Key_Registry13.csv', 'w', encoding='UTF8', newline='') as f:
+    with open('Key_Registry14.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
 
         # write the .csv
@@ -143,16 +162,21 @@ def addParticipantsNames(keyLocation, dataFileLocation):
 
     ParticipantNames = []
 
-    for i in range(len(data) - 1):
+    for i in range(len(data) - RowStart):
         # In this case, the names are in the zero column. This will change depending on the survey data formatting.
-        ParticipantNames.append([data[1 + i][0]])
+        ParticipantNames.append([data[RowStart + i][ParticipantColumn], data[RowStart + i][NicknameColumn]])
+
+    print(ParticipantNames)
 
     # Split the participant Names into First Name/Last Name components
     dfParticipantNames = pd.DataFrame(ParticipantNames)
+    dfParticipantNames[2] = dfParticipantNames[1]
     dfParticipantNames[[0, 1]] = dfParticipantNames[0].str.split(' ', expand=True)
     ParticipantNames = dfParticipantNames.values.tolist()
 
+    print(ParticipantNames)
 
+    newNicknameColumn = 2
 
     # loop through each of the raw data rows
     for l in range(len(ParticipantNames)):
@@ -162,13 +186,37 @@ def addParticipantsNames(keyLocation, dataFileLocation):
 
             # identify the name to be checked for in the key
             ParticipantName = [ParticipantNames[l][m], ParticipantNames[l][m + 1]]
+######################################PUT IN NICKNAME STUFF HERE?########################################################
+# --------------------------------------------- ONE NICKNAME ONLY -----------------------------------------------------
+            if ParticipantNames[l][NicknameColumn] != "N/A" or "NA" or "na" or "n/a" or "none" or "None" or "Nope":
 
+                if "," not in ParticipantNames[l][newNicknameColumn] and " " not in ParticipantNames[l][newNicknameColumn]:
+                    check = looper(ParticipantName, key)
+                    if check:
+                        key.append([len(key) + 1, ParticipantNames[l][m], ParticipantNames[l][m + 1],
+                                    ParticipantNames[l][NicknameColumn], ParticipantNames[l][m + 1]])
+
+# --------------------------------------------- SEPERATED BY COMMA -----------------------------------------------------
+                if "," in ParticipantNames[l][newNicknameColumn]:
+                    Split = ParticipantNames[l][newNicknameColumn].split(",")
+                    print("Split names are", Split)
+                    for i in Split:?
+                        if " " in Split[i]:
+
+
+
+
+
+########################################END NICKNAME STUFF HERE#########################################################
             # now run the sub-routine to see if the name is in the key
             check = looper(ParticipantName, key)
 
             # If the name is not in the key, add the name to the key
             if check:
                 key.append([len(key) + 1, ParticipantNames[l][m], ParticipantNames[l][m + 1]])
+
+
+
 
     for i in range(len(key)):
         for j in range(len(key[i])):
@@ -180,7 +228,7 @@ def addParticipantsNames(keyLocation, dataFileLocation):
     print("The total size of the key after being initialized is", len(key))
 
     import csv
-    with open('KeyAfterParticipantNames13.csv', 'w', encoding='UTF8', newline='') as f:
+    with open('KeyAfterParticipantNames14.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
 
         # write the .csv
@@ -217,27 +265,38 @@ def replacingFunc(dataFileLocation, keyLocation):
 
     # Loop through the key and data and replace accordingly
     resolvedcount = 0
+
     for i in range(len(data)):
         for j in range(0, len(data[0]) - 1):
             for l in range(len(key)):
-                for m in range(len(key[l]) - 2):
-                    if data[i][j] == key[l][m + 1]:
-                        if data[i][j+1] == key[l][m + 2]:
-                            resolvedcount += 1
-                            data[i][j] = key[l][0]
-                            data[i][j+1] = key[l][0]
+                for m in range(len(key[l]) - 1):
+                    for s in range(PeerColumnGroup1[1]-PeerColumnGroup1[0]):
+                        if data[i][s+PeerColumnGroup1[0]] == key[l][m + 1]:
+                            if data[i][s+PeerColumnGroup1[0]+1] == key[l][m + 2]:
+                                resolvedcount += 1
+                                data[i][s + PeerColumnGroup1[0]] = key[l][0]
+                                data[i][s + PeerColumnGroup1[0] + 1] = key[l][0]
+                    if PeerColumnGroup2 != 0:
+                        for q in range(PeerColumnGroup2[1]-PeerColumnGroup2[0]):
+                            if data[i][q + PeerColumnGroup2[0]] == key[l][m + 1]:
+                                if data[i][q + PeerColumnGroup2[0] + 1] == key[l][m + 2]:
+                                    resolvedcount += 1
+                                    data[i][q + PeerColumnGroup1[0]] = key[l][0]
+                                    data[i][q + PeerColumnGroup1[0] + 1] = key[l][0]
+
     print("The number of names resolved in the exact replacement stage is:", resolvedcount)
 
     ambiguouscount = 0
+# MAYBE ADD SOMETHING HERE ABOUT N/A string values
     for i in range(len(data)):
         for j in range(len(data[0])):
-            if isinstance(data[i][j], str):
+            if isinstance(data[i][j], str) and data[i][j] != "n/a" and data[i][j] != "nan":
                 ambiguouscount += 1
 
     print("The number of remaining names (ambiguous) is:", (ambiguouscount/2) - resolvedcount)
     # write the data file to a .csv
     import csv
-    with open('DataforComparison13.csv', 'w', encoding='UTF8', newline='') as f:
+    with open('DataforComparison14.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
 
         # write the .csv
@@ -299,15 +358,17 @@ def compareKeytoData(keyLocation, dataFileLocation):
 
     CompareList = []
 
-    for o in range(len(data) - 1):
-        for p in range(0, len(data[0]) - 1, 2): # This is the number of columns of interaction data containing peer names divided by 2
-            #if isinstance(data[i][p], str): # Is this even working?
+    for o in range(len(data) - RowStart):
+        for p in range(0, len(data[0]) - PeerColumnGroup1[0], 2): # This is the number of columns of interaction data containing peer names divided by 2
 
             for i in range(len(key)):
                     # now check each key column, first names are in cols 1,3,5,... last names col. 2,4,6,...
                 for j in range(0, len(key[i]) - 1, 2):
 
-                    AmbiguousName = [data[o+1][p+1], data[o+1][p+2]]
+                    AmbiguousName = [data[o+RowStart][p+PeerColumnGroup1[0]], data[o+RowStart][p+1+PeerColumnGroup1[0]]]
+
+                    if PeerColumnGroup2 != 0:
+                        AmbiguousName = [data[o+RowStart][p+PeerColumnGroup2[0]], data[o+RowStart][p+1+PeerColumnGroup2[0]]]
 
                     KeyName = [key[i][j+1], key[i][j+2]]
 
@@ -328,7 +389,7 @@ def compareKeytoData(keyLocation, dataFileLocation):
 
     # Write the "CompareList" to a csv file
     import csv
-    with open('CompleteTrialIteration13.csv', 'w', encoding='UTF8', newline='') as f:
+    with open('CompleteTrialIteration14.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
 
         # write the .csv
@@ -340,29 +401,19 @@ def compareKeytoData(keyLocation, dataFileLocation):
 ########################################### MAIN FUNCTION LOGIC ########################################################
 
 
-
-# This should be the absolute path file location of the qualtrics data file
-dataFileLocation = '/Users/adamweaver/Desktop/SNA/SyntheticInteractionData.csv'
-
-# This should be the file location on your computer of the key .csv
-keyLocation = '/Users/adamweaver/Desktop/SNA/SyntheticKey(Fall2022).csv'
-
-# This should be the absolute path file location of the registry data file
-registryLocation = '/Users/adamweaver/Desktop/SNA/SyntheticRegistry.csv'
-
 # EVENTUALLY I NEED TO MAKE COPIES OF THE REAL DATA HERE
 
 key = addRegistryNames(keyLocation, registryLocation)
 
-keyLocation = 'Key_Registry13.csv'
+keyLocation = 'Key_Registry14.csv'
 
 key = addParticipantsNames(keyLocation, dataFileLocation)
 
-keyLocation = 'KeyAfterParticipantNames13.csv'
+keyLocation = 'KeyAfterParticipantNames14.csv'
 
 data = replacingFunc(dataFileLocation, keyLocation)
 
-dataFileLocation = 'DataforComparison13.csv'
+dataFileLocation = 'DataforComparison14.csv'
 
 compareKeytoData(keyLocation, dataFileLocation)
 
@@ -379,3 +430,31 @@ compareKeytoData(keyLocation, dataFileLocation)
 
 # ASSUMPTIONS:
         # REGISTRY IS FORMATTED WITH FIRST AND LAST NAME IN THE 0th COLUMN WITH A SPACE IN BETWEEEN THEM
+
+        #5:22-
+
+# NEED TO GET THE COUNTER TO WORK (FOR AMBIGUOUS NAMES)!!!!!!
+
+# ASK JACK:
+# C.J., A.J., AJ, ect. What do we do about these? Only assume if reported
+
+# Read in nickname column to the participant column list?
+
+# ACTUALLY FIRST: Put an if statement that says that the string is not:  any version of na or none or nope
+
+# 1. First, IF there are no spaces or commas in the string, add to key with the attached last name
+
+
+# 2. Next, IF there are commas, split the string and make sure there are no spaces.
+    # IF there are no spaces,Add each chunk it to the same row in the key
+    # IF there are spaces in the split string, evalute the second portion of the string to see if it matches the last name.
+        # IF the second portion of the string matches the last name of the participant, add the whole thing in two different columns
+        # IF the second portion does not match the last name of the participant, add it to a seperate list to disambiguate manually
+
+# 3. Next, see if there are "or" splitting the two. If so, split the string by the or
+        # IF there are no spaces in the two split strings, add these to the key with the respective last name
+        # IF there ARE spaces in either of the two split strings, follow the if statements in number 2 for next steps.
+
+# 4. Lastly, ensure that the string is NOT added to the key unless it qualifies the above criteria. The remaining names can be disambiguated manually?
+
+#

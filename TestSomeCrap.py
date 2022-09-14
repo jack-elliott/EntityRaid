@@ -1,10 +1,3 @@
-name = ['bob', 'weaver-nielson']
+PeerColumnGroup2 = [67, 76]
 
-def hyphenDetector(string):
-    for i in range(0, len(string)):
-        if string[i] == '-':
-            return True
-
-bob = hyphenDetector(name[1])
-if bob:
-    print("This is working")
+print(PeerColumnGroup2[1]-PeerColumnGroup2[0])
