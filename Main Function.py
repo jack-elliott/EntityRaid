@@ -477,28 +477,31 @@ def replacingFunc(dataFileLocation, keyLocation):
 
     # Loop through the key and data and replace accordingly
     resolvedcount = 0
-
-    for i in range(RowStart, len(data)):
-        for j in range(0, len(data[0]) - 1):
+    import time
+    start = time.time()
+    for i in range(RowStart, len(data)):#loop through every row of the raw data
+        for s in range(PeerColumnGroup1[1]-PeerColumnGroup1[0]):
             for l in range(len(key)):
                 for m in range(len(key[l]) - 2):
-                    for s in range(PeerColumnGroup1[1]-PeerColumnGroup1[0]):
-                        if isinstance(data[i][s+PeerColumnGroup1[0]], str) and isinstance(data[i][s+PeerColumnGroup1[0]+1], str):
+                    if isinstance(data[i][s+PeerColumnGroup1[0]], str) and isinstance(data[i][s+PeerColumnGroup1[0]+1], str):
+                        if key[l][m + 1] and key[l][m + 2] != "none":
                             if data[i][s+PeerColumnGroup1[0]] == key[l][m + 1]:
                                 if data[i][s+PeerColumnGroup1[0]+1] == key[l][m + 2]:
-                                    if key[l][m + 1] and key[l][m + 2] != "none":
-                                        resolvedcount += 1
-                                        data[i][s + PeerColumnGroup1[0]] = key[l][0]
-                                        data[i][s + PeerColumnGroup1[0] + 1] = key[l][0]
-                    if PeerColumnGroup2 != 0:
-                        if isinstance(data[i][s + PeerColumnGroup1[0]], str) and isinstance(data[i][s + PeerColumnGroup1[0] + 1], str):
-                            for q in range(PeerColumnGroup2[1]-PeerColumnGroup2[0]):
-                                if data[i][q + PeerColumnGroup2[0]] == key[l][m + 1]:
-                                    if data[i][q + PeerColumnGroup2[0] + 1] == key[l][m + 2]:
-                                        if key[l][m + 1] and key[l][m + 2] != "none":
-                                            resolvedcount += 1
-                                            data[i][q + PeerColumnGroup1[0]] = key[l][0]
-                                            data[i][q + PeerColumnGroup1[0] + 1] = key[l][0]
+                                    resolvedcount += 1
+                                    data[i][s + PeerColumnGroup1[0]] = key[l][0]
+                                    data[i][s + PeerColumnGroup1[0] + 1] = key[l][0]
+                                    new = time.time()
+                                    timetoresolvesingle = new - start
+                                    print(timetoresolvesingle)
+        if PeerColumnGroup2 != 0:
+            for q in range(PeerColumnGroup2[1]-PeerColumnGroup2[0]):
+                if isinstance(data[i][q + PeerColumnGroup2[0]], str) and isinstance(data[i][q + PeerColumnGroup2[0] + 1], str):
+                    if key[l][m + 1] and key[l][m + 2] != "none":
+                        if data[i][q + PeerColumnGroup2[0]] == key[l][m + 1]:
+                            if data[i][q + PeerColumnGroup2[0] + 1] == key[l][m + 2]:
+                                resolvedcount += 1
+                                data[i][q + PeerColumnGroup1[0]] = key[l][0]
+                                data[i][q + PeerColumnGroup1[0] + 1] = key[l][0]
 #  --------------------------- REPLACE PARTICIPANT'S SELF REPORTED NAMES --------------------------------------------  #
                    # ParticipantSelfReportedNames = []
                 #    KeyName = [key[l][m+1], key[l][m+2]]
@@ -626,16 +629,19 @@ def compareKeytoData(keyLocation, dataFileLocation):
                            "Ambiguous Last Name", "First Name: LD", "First Name: Metaphone",
                            "Last Name: LD", "Last Name: Metaphone"])
 
+    print(CompareList)
+
+
     # Write the "CompareList" to a csv file
-    import csv
-    with open('CompleteTrialIteration39.csv', 'w', encoding='UTF8', newline='') as f:
-        writer = csv.writer(f)
+   # import csv
+   # with open('CompleteTrialIteration39.csv', 'w', encoding='UTF8', newline='') as f:
+    #    writer = csv.writer(f)
 
         # write the .csv
-        writer.writerows(CompareList)
+    #    writer.writerows(CompareList)
 
     # spit these out so we can check to make sure deals work
-    return CompareList
+   # return CompareList
 
 ########################################### MAIN FUNCTION LOGIC ########################################################
 
