@@ -8,16 +8,17 @@
 #    Interaction data can vary in positioning, but not in formatting
 #    REGISTRY IS FORMATTED WITH FIRST AND LAST NAME IN THE 0th COLUMN WITH A SPACE IN BETWEEN THEM
 
+import os
 
 # USER INPUT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # This should be the absolute path file location of the qualtrics data file
-dataFileLocation = '/Users/adamweaver/Desktop/SNA/ActualSurveyData(09:28:2022).csv'
+dataFileLocation = r'C:/Users/A02234125/Desktop/ActualSurveyData.csv'
 
 # This should be the file location on your computer of the key .csv
-keyLocation = '/Users/adamweaver/Desktop/SNA/ActualKey.csv'
+keyLocation = r'C:/Users/A02234125/Desktop/ActualKey.csv'
 
 # This should be the absolute path file location of the registry data file
-registryLocation = '/Users/adamweaver/Desktop/SNA/ActualRoster(09:28:2022).csv'
+registryLocation = r'C:/Users/A02234125/Desktop/ActualRoster.csv'
 
 ParticipantColumn = 21
 NicknameColumn = 25
@@ -25,6 +26,13 @@ PeerColumnGroup1 = [26, 45]
 PeerColumnGroup2 = [87, 106]
 RowStart = 3
 RegistryRowStart = 2
+
+testNumber = 40
+
+# =============================================================================
+# cwd = os.getcwd()
+# print(dataFileLocation)
+# =============================================================================
 
 # END USER INPUT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 def looper(ParticipantName, key):
@@ -160,7 +168,7 @@ def addRegistryNames(registryLocation):
                 key.append([len(key), FinalRegistry[l][m], FinalRegistry[l][m + 1]])
 
     import csv
-    with open('Key_Registry39.csv', 'w', encoding='UTF8', newline='') as f:
+    with open('Key_Registry'+str(testNumber)+'.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
 
         # write the .csv
@@ -441,7 +449,7 @@ def addParticipantsNames(keyLocation, dataFileLocation):
     print("The total size of the key after being initialized is", len(key))
 
     import csv
-    with open('KeyAfterParticipantNames39.csv', 'w', encoding='UTF8', newline='') as f:
+    with open('KeyAfterParticipantNames'+str(testNumber)+'.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
 
         # write the .csv
@@ -477,8 +485,10 @@ def replacingFunc(dataFileLocation, keyLocation):
 
     # Loop through the key and data and replace accordingly
     resolvedcount = 0
-    import time
-    start = time.time()
+# =============================================================================
+#     import time
+#     start = time.time()
+# =============================================================================
     for i in range(RowStart, len(data)):#loop through every row of the raw data
         for s in range(PeerColumnGroup1[1]-PeerColumnGroup1[0]):
             for l in range(len(key)):
@@ -490,9 +500,11 @@ def replacingFunc(dataFileLocation, keyLocation):
                                     resolvedcount += 1
                                     data[i][s + PeerColumnGroup1[0]] = key[l][0]
                                     data[i][s + PeerColumnGroup1[0] + 1] = key[l][0]
-                                    new = time.time()
-                                    timetoresolvesingle = new - start
-                                    print(timetoresolvesingle)
+# =============================================================================
+#                                     new = time.time()
+#                                     timetoresolvesingle = new - start
+#                                     print(timetoresolvesingle)
+# =============================================================================
         if PeerColumnGroup2 != 0:
             for q in range(PeerColumnGroup2[1]-PeerColumnGroup2[0]):
                 if isinstance(data[i][q + PeerColumnGroup2[0]], str) and isinstance(data[i][q + PeerColumnGroup2[0] + 1], str):
@@ -536,7 +548,7 @@ def replacingFunc(dataFileLocation, keyLocation):
     print("The number of remaining names (ambiguous) is:", (ambiguouscount/2))
     # write the data file to a .csv
     import csv
-    with open('DataforComparison39.csv', 'w', encoding='UTF8', newline='') as f:
+    with open('DataforComparison'+str(testNumber)+'.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
 
         # write the .csv
@@ -629,35 +641,44 @@ def compareKeytoData(keyLocation, dataFileLocation):
                            "Ambiguous Last Name", "First Name: LD", "First Name: Metaphone",
                            "Last Name: LD", "Last Name: Metaphone"])
 
-    print(CompareList)
+    #print(CompareList)
 
 
     # Write the "CompareList" to a csv file
-   # import csv
-   # with open('CompleteTrialIteration39.csv', 'w', encoding='UTF8', newline='') as f:
-    #    writer = csv.writer(f)
-
-        # write the .csv
-    #    writer.writerows(CompareList)
-
-    # spit these out so we can check to make sure deals work
-   # return CompareList
+    import csv
+    with open('CompleteTrialIteration'+str(testNumber)+'.csv', 'w', encoding='UTF8', newline='') as f:
+        writer = csv.writer(f)
+    
+    #write the .csv
+    writer.writerows(CompareList)
+    
+    #spit these out so we can check to make sure deals work
+    return CompareList
 
 ########################################### MAIN FUNCTION LOGIC ########################################################
 
 
 # EVENTUALLY I NEED TO MAKE COPIES OF THE REAL DATA HERE
 
+#check if the output files exist (due to the testNumber already being used) If so, delete prior to writing new files
+if os.path.isdir(str('Key_Registry'+str(testNumber)+'.csv')):
+    
+    os.remove(str('Key_Registry'+str(testNumber)+'.csv'))
+    os.remove(str('KeyAfterParticipantNames'+str(testNumber)+'.csv'))
+    os.remove(str('DataforComparison'+str(testNumber)+'.csv'))
+    
+    
+#rite the output files to the working directory of main()
 key = addRegistryNames(registryLocation)
 
-keyLocation = 'Key_Registry39.csv'
+keyLocation = str('Key_Registry'+str(testNumber)+'.csv')
 
 key = addParticipantsNames(keyLocation, dataFileLocation)
 
-keyLocation = 'KeyAfterParticipantNames39.csv'
+keyLocation = str('KeyAfterParticipantNames'+str(testNumber)+'.csv')
 
 data = replacingFunc(dataFileLocation, keyLocation)
 
-dataFileLocation = 'DataforComparison39.csv'
+dataFileLocation = str('DataforComparison'+str(testNumber)+'.csv')
 
 compareKeytoData(keyLocation, dataFileLocation)
