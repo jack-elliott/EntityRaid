@@ -624,18 +624,18 @@ def compareKeytoData(keyLocation, dataFileLocation):
                         AmbiguousName = [data[o+RowStart][p+PeerColumnGroup2[0]], data[o+RowStart][p+1+PeerColumnGroup2[0]]]
 
                     KeyName = [key[i][j+1], key[i][j+2]]
+                    if isinstance(AmbiguousName, str):
+                        if AmbiguousName[0].isalpha() and AmbiguousName[1].isalpha():
 
-                    if AmbiguousName[0].isalpha() and AmbiguousName[1].isalpha():
+                            ComparisonScoreFirstName = compare(KeyName[0], AmbiguousName[0])
 
-                        ComparisonScoreFirstName = compare(KeyName[0], AmbiguousName[0])
+                            ComparisonScoreLastName = compare(KeyName[1], AmbiguousName[1])
 
-                        ComparisonScoreLastName = compare(KeyName[1], AmbiguousName[1])
+                            if ComparisonScoreLastName[0] <= 2 and ComparisonScoreFirstName[0] <= 2 and ComparisonScoreLastName[1] <= 2 and ComparisonScoreFirstName[1] <= 2:
 
-                        if ComparisonScoreLastName[0] <= 2 and ComparisonScoreFirstName[0] <= 2 and ComparisonScoreLastName[1] <= 2 and ComparisonScoreFirstName[1] <= 2:
-
-                            CompareList.append([KeyName[0], KeyName[1], AmbiguousName[0], AmbiguousName[1],
-                                                ComparisonScoreFirstName[0], ComparisonScoreLastName[1],
-                                                ComparisonScoreLastName[0], ComparisonScoreLastName[1]])
+                                CompareList.append([KeyName[0], KeyName[1], AmbiguousName[0], AmbiguousName[1],
+                                                    ComparisonScoreFirstName[0], ComparisonScoreLastName[1],
+                                                    ComparisonScoreLastName[0], ComparisonScoreLastName[1]])
 
     # Put titles on the "CompareList" sheet
     CompareList.insert(0, ["Key First Name", "Key Last Name", "Ambiguous First Name",
