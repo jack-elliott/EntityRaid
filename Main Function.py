@@ -7,28 +7,64 @@
 #    Key formatting and positioning should be exactly similar to ours
 #    Interaction data can vary in positioning, but not in formatting
 #    REGISTRY IS FORMATTED WITH FIRST AND LAST NAME IN THE 0th COLUMN WITH A SPACE IN BETWEEN THEM
+#    ASSUMES THAT BOTH PEER COLUMN GROUPS ARE THE SAME SIZE
 
 import os
 
 # USER INPUT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # This should be the absolute path file location of the qualtrics data file
 
-dataFileLocation = r'C:/Users/A02234125/Desktop/ActualSurveyData.csv'
+######### JACK LOCATION ######
+#dataFileLocation = r'C:/Users/A02234125/Desktop/ActualSurveyData.csv'
 
 # This should be the file location on your computer of the key .csv
-keyLocation = r'C:/Users/A02234125/Desktop/ActualKey.csv'
+#keyLocation = r'C:/Users/A02234125/Desktop/ActualKey.csv'
 
 # This should be the absolute path file location of the registry data file
-registryLocation = r'C:/Users/A02234125/Desktop/ActualRoster.csv'
+#registryLocation = r'C:/Users/A02234125/Desktop/ActualRoster.csv'
 
-ParticipantColumn = 21
-NicknameColumn = 25
-PeerColumnGroup1 = [26, 45]
-PeerColumnGroup2 = [87, 106]
+######### ADAM LOCATION ######
+#dataFileLocation = '/Users/adamweaver/Documents/ActualSurveyData(09:28:2022).csv'
+
+# This should be the file location on your computer of the key .csv
+#keyLocation = '/Users/adamweaver/Desktop/SNA/ActualKey.csv'
+
+# This should be the absolute path file location of the registry data file
+#registryLocation = '/Users/adamweaver/Desktop/SNA/ActualRoster(09:28:2022).csv'
+
+##########
+
+## ADAM SYNTHETIC LOCATION:
+dataFileLocation = '/Users/adamweaver/Desktop/SNA/SyntheticInteractionData.csv'
+
+# This should be the file location on your computer of the key .csv
+keyLocation = '/Users/adamweaver/Desktop/SNA/SyntheticKey(Fall2022).csv'
+
+# This should be the absolute path file location of the registry data file
+registryLocation = '/Users/adamweaver/Desktop/SNA/SyntheticRegistry.csv'
+
+###
+
+##### REAL DATA VALUES ###
+#ParticipantColumn = 21
+#NicknameColumn = 25
+#PeerColumnGroup1 = [26, 45]
+#PeerColumnGroup2 = [87, 106]
+#RowStart = 3
+#RegistryRowStart = 2
+
+#testNumber = 40
+
+#####
+## SYNTHETIC DATA VALUES ###
+ParticipantColumn = 0
+NicknameColumn = 1
+PeerColumnGroup1 = [2, 13]
+PeerColumnGroup2 = 0
 RowStart = 3
 RegistryRowStart = 2
 
-testNumber = 40
+testNumber = 42
 
 # =============================================================================
 # cwd = os.getcwd()
@@ -146,6 +182,7 @@ def addRegistryNames(registryLocation):
             MultipleLastNames.append(name)
         if hyphen:
             MultipleLastNames.append(name)
+
 
     for names in MultipleLastNames:
         if names in FinalRegistry:
@@ -286,8 +323,11 @@ def addParticipantsNames(keyLocation, dataFileLocation):
                                 if key[location][i] == "none":
                                     ColumnLocation = i
                                     ColumnLocationList.append(ColumnLocation)
-                            if ColumnLocationList != []:
+                            if ColumnLocationList:
                                 ActualColumnLocation = min(ColumnLocationList)
+
+                            if not ColumnLocationList:
+                                ActualColumnLocation = 1
 
                             if ParticipantNames[l][newNicknameColumn] not in key[location]:
 
@@ -471,12 +511,17 @@ def replacingFunc(dataFileLocation, keyLocation):
     key = pd.read_csv(keyLocation, header=None)
     key = key.values.tolist()
 
+
     # Convert all of the data strings to just lowercase and remove all white space to make life easier
     for i in range(len(data)):  # loop through the whole list of data
         for j in range(len(data[0])):  # loop through each element per row
             if isinstance(data[i][j], str):  # check if each element is a string, if so convert to upper and remove whitespace
                 data[i][j] = data[i][j].lower()
                 data[i][j] = data[i][j].replace(" ", "")
+
+
+
+
 
     # Now, make the key all lowercase so that matching will work in the following logic
     for a in range(len(key)):
@@ -612,7 +657,7 @@ def compareKeytoData(keyLocation, dataFileLocation):
     CompareList = []
 
     for o in range(len(data) - RowStart):
-        for p in range(0, len(data[0]) - PeerColumnGroup1[0], 2): # This is the number of columns of interaction data containing peer names divided by 2
+        for p in range(PeerColumnGroup1[1] - PeerColumnGroup1[0] - 1): # This is the number of columns of interaction data containing peer names divided by 2
 
             for i in range(len(key)):
                     # now check each key column, first names are in cols 1,3,5,... last names col. 2,4,6,...
@@ -624,12 +669,14 @@ def compareKeytoData(keyLocation, dataFileLocation):
                         AmbiguousName = [data[o+RowStart][p+PeerColumnGroup2[0]], data[o+RowStart][p+1+PeerColumnGroup2[0]]]
 
                     KeyName = [key[i][j+1], key[i][j+2]]
-                    if isinstance(AmbiguousName, str):
+
+                    if isinstance(AmbiguousName[0], str) and isinstance(AmbiguousName[1], str):
                         if AmbiguousName[0].isalpha() and AmbiguousName[1].isalpha():
 
                             ComparisonScoreFirstName = compare(KeyName[0], AmbiguousName[0])
 
                             ComparisonScoreLastName = compare(KeyName[1], AmbiguousName[1])
+
 
                             if ComparisonScoreLastName[0] <= 2 and ComparisonScoreFirstName[0] <= 2 and ComparisonScoreLastName[1] <= 2 and ComparisonScoreFirstName[1] <= 2:
 
@@ -651,7 +698,7 @@ def compareKeytoData(keyLocation, dataFileLocation):
         writer = csv.writer(f)
     
     #write the .csv
-    writer.writerows(CompareList)
+        writer.writerows(CompareList)
     
     #spit these out so we can check to make sure deals work
     return CompareList
