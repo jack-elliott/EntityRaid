@@ -53,7 +53,7 @@ PeerColumnGroup2 = [87, 106]
 RowStart = 3
 RegistryRowStart = 2
 
-testNumber = 43
+testNumber = 53
 
 #####
 ## SYNTHETIC DATA VALUES ###
@@ -102,7 +102,7 @@ def keyPosition(ParticipantName, key):
 
                 # Check the second name IF the first name matches
                 if ParticipantName[1] == key[i][j + 2]:
-                    # If the name is already in the key, return false (makes sense later)
+                    # If the name is already in the key, return location
                     return key[i][0] - 1
 
     # if the name was not already in the key (made it here), return true
@@ -248,12 +248,6 @@ def addParticipantsNames(keyLocation, dataFileLocation):
     dfParticipantNames[1] = dfSplit[1]
     ParticipantNames = dfParticipantNames.values.tolist()
 
-    for i in range(len(key)):
-        for j in range(len(key[i])):
-            if len(key[i]) < len(max(key, key=len)):
-                for o in range(len(max(key, key=len))-len(key[i])):
-                    key[i].append("none")
-
     for h in range(len(key)):
         for u in range(len(key[h])-1):
             key[h][u+1] = key[h][u+1].lower()
@@ -361,7 +355,7 @@ def addParticipantsNames(keyLocation, dataFileLocation):
                     if "or" in ParticipantNames[l][newNicknameColumn]:
 
                         ParticipantNames[l][newNicknameColumn] = ParticipantNames[l][newNicknameColumn].replace(" or ", "or")
-                        SplitOr = ParticipantNames[l][newNicknameColumn].split("or")
+                        SplitOr = ParticipantNames[l][newNicknameColumn].split('or')
 
                         check = looper(ParticipantName, key)
                         location = keyPosition(ParticipantName, key)
@@ -440,14 +434,19 @@ def addParticipantsNames(keyLocation, dataFileLocation):
 
                     if "," not in ParticipantNames[l][newNicknameColumn] and " " not in ParticipantNames[l][newNicknameColumn]:
 
-                        check = looper([ParticipantNames[l][m], ParticipantNames[l][m + 1]], key)
+                        check = looper(ParticipantName, key)
                         location = keyPosition([ParticipantNames[l][m], ParticipantNames[l][m + 1]], key)
 
-                        checktwo = looper([ParticipantNames[l][newNicknameColumn],ParticipantNames[l][1]], key)
-                        locationtwo = keyPosition([ParticipantNames[l][newNicknameColumn], ParticipantNames[l][1]], key)
+                        checktwo = looper([ParticipantNames[l][newNicknameColumn], ParticipantName[1]], key)
+                        locationtwo = keyPosition([ParticipantNames[l][newNicknameColumn], ParticipantNames[1]], key)
 
-                        if not checktwo:
-                            if check:
+                        print(ParticipantName)
+                        print(ParticipantNames[l][newNicknameColumn])
+                      #  print(check)
+                      #  print(checktwo)
+
+                        if not check: # if name is in the key, but ...
+                            if checktwo: # ... nickname is not in the key
                                 ColumnLocationList = []
                                 for i in range(len(key[location])):
                                     if key[location][i] == "none":
@@ -458,11 +457,17 @@ def addParticipantsNames(keyLocation, dataFileLocation):
                                 if ColumnLocationList != []:
                                     ActualColumnLocation = min(ColumnLocationList)
 
-                                key[locationtwo].insert(ActualColumnLocation, ParticipantNames[l][0])
-                                key[locationtwo].insert(ActualColumnLocation + 1, ParticipantNames[l][1])
+                               # print(ParticipantNames[l][0])
+                               # print(ParticipantNames[l][1])
+                               # print(locationtwo)
+                               # print(location)
+                                if not isinstance(location, float):
+                                    print("LOCATION IS", location)
+                                    key[location].insert(ActualColumnLocation, ParticipantNames[l][newNicknameColumn])
+                                    key[location].insert(ActualColumnLocation + 1, ParticipantName[1])
 
-                        if checktwo:
-                            if check:
+                        if checktwo: # if nickname is not in the key
+                            if check: # AND the name is not already in the key
                                 key.append([len(key) + 1, ParticipantNames[l][m], ParticipantNames[l][m + 1],
                                        ParticipantNames[l][newNicknameColumn], ParticipantNames[l][1]])
 
@@ -480,11 +485,14 @@ def addParticipantsNames(keyLocation, dataFileLocation):
             if check and checktwo:
                 key.append([len(key) + 1, ParticipantNames[l][m], ParticipantNames[l][m + 1]])
 
+    LengthList = []
     for i in range(len(key)):
-        for j in range(len(key[i])):
-            if len(key[i]) < len(max(key)):
-                for o in range(len(max(key))-len(key[i])):
-                    key[i].append("none")
+        LengthList.append(len(key[i]))
+    MaxColumns = max(LengthList)
+    for i in range(len(key)):
+        if len(key[i]) < MaxColumns:
+            for o in range(MaxColumns-len(key[i])):
+                key[i].append("none")
 
     print('There are', len(ParticipantNames[0]), "participant names (not in the registry) that have been added to the key.")
     print("The total size of the key after being initialized is", len(key))
@@ -511,6 +519,16 @@ def replacingFunc(dataFileLocation, keyLocation):
     key = pd.read_csv(keyLocation, header=None)
     key = key.values.tolist()
 
+    def alphaStrip(string):
+
+        out = ""
+
+        for i in range(len(string)):
+
+            if string[i].isalpha():
+                out = out + string[i]
+
+        return out
 
     # Convert all of the data strings to just lowercase and remove all white space to make life easier
     for i in range(len(data)):  # loop through the whole list of data
@@ -518,6 +536,7 @@ def replacingFunc(dataFileLocation, keyLocation):
             if isinstance(data[i][j], str):  # check if each element is a string, if so convert to upper and remove whitespace
                 data[i][j] = data[i][j].lower()
                 data[i][j] = data[i][j].replace(" ", "")
+                data[i][j] = alphaStrip(data[i][j])
 
     # Now, make the key all lowercase so that matching will work in the following logic
     for a in range(len(key)):
@@ -613,6 +632,8 @@ def compare(KeyName, AmbiguousName):
     from Levenshtein import distance as lev
     import phonetics
 # This is a simple Levenshtein Distance calculation from the library. I print this value to confirm its validity
+    print("KeyName is", KeyName)
+    print("Ambiguous Name is", AmbiguousName)
     LevenshteinDistance = lev(KeyName, AmbiguousName)
 
 # This calculates the phonetic key according to the double metaphone for the KEY name
@@ -704,9 +725,9 @@ def compareKeytoData(keyLocation, dataFileLocation):
         for i in range(len(data)):
             for j in range(len(data[i])):
                 for b in range(len(FullList)):
-                        for b in range(PeerColumnGroup1[1] - PeerColumnGroup1[0]):
-                            if data[i + RowStart][PeerColumnGroup1[0] + b] == FullList[b][0]:
-                                EdgeList.append([data[i + RowStart][ParticipantColumn], FullList[b][0]])
+                    for b in range(PeerColumnGroup1[1] - PeerColumnGroup1[0]):
+                        if data[i + RowStart][PeerColumnGroup1[0] + b] == FullList[b][0]:
+                            EdgeList.append([data[i + RowStart][ParticipantColumn], FullList[b][0]])
 
     # Write the "CompareList" to a csv file
     import csv
@@ -744,5 +765,9 @@ keyLocation = str('KeyAfterParticipantNames'+str(testNumber)+'.csv')
 data = replacingFunc(dataFileLocation, keyLocation)
 
 dataFileLocation = str('DataforComparison'+str(testNumber)+'.csv')
+
+#keyLocation = '/Users/adamweaver/Documents/GitHub/KeyAfterParticipantNames43.csv'
+
+#dataFileLocaiton = '/Users/adamweaver/Documents/GitHub/DataforComparison43.csv'
 
 compareKeytoData(keyLocation, dataFileLocation)
