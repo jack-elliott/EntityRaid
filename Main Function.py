@@ -24,47 +24,47 @@ import os
 #registryLocation = r'C:/Users/A02234125/Desktop/ActualRoster.csv'
 
 ######### ADAM LOCATION ######
-#dataFileLocation = '/Users/adamweaver/Documents/ActualSurveyData(09:28:2022).csv'
+dataFileLocation = '/Users/adamweaver/Documents/ActualSurveyData(09:28:2022).csv'
 
 # This should be the file location on your computer of the key .csv
-#keyLocation = '/Users/adamweaver/Desktop/SNA/ActualKey.csv'
+keyLocation = '/Users/adamweaver/Desktop/SNA/ActualKey.csv'
 
 # This should be the absolute path file location of the registry data file
-#registryLocation = '/Users/adamweaver/Desktop/SNA/ActualRoster(09:28:2022).csv'
+registryLocation = '/Users/adamweaver/Desktop/SNA/ActualRoster(09:28:2022).csv'
 
 ##########
 
 ## ADAM SYNTHETIC LOCATION:
-dataFileLocation = '/Users/adamweaver/Desktop/SNA/SyntheticInteractionData.csv'
+#dataFileLocation = '/Users/adamweaver/Desktop/SNA/SyntheticInteractionData.csv'
 
 # This should be the file location on your computer of the key .csv
-keyLocation = '/Users/adamweaver/Desktop/SNA/SyntheticKey(Fall2022).csv'
+#keyLocation = '/Users/adamweaver/Desktop/SNA/SyntheticKey(Fall2022).csv'
 
 # This should be the absolute path file location of the registry data file
-registryLocation = '/Users/adamweaver/Desktop/SNA/SyntheticRegistry.csv'
+#registryLocation = '/Users/adamweaver/Desktop/SNA/SyntheticRegistry.csv'
 
 ###
 
 ##### REAL DATA VALUES ###
-#ParticipantColumn = 21
-#NicknameColumn = 25
-#PeerColumnGroup1 = [26, 45]
-#PeerColumnGroup2 = [87, 106]
-#RowStart = 3
-#RegistryRowStart = 2
-
-#testNumber = 40
-
-#####
-## SYNTHETIC DATA VALUES ###
-ParticipantColumn = 0
-NicknameColumn = 1
-PeerColumnGroup1 = [2, 13]
-PeerColumnGroup2 = 0
+ParticipantColumn = 21
+NicknameColumn = 25
+PeerColumnGroup1 = [26, 45]
+PeerColumnGroup2 = [87, 106]
 RowStart = 3
 RegistryRowStart = 2
 
-testNumber = 42
+testNumber = 43
+
+#####
+## SYNTHETIC DATA VALUES ###
+#ParticipantColumn = 0
+#NicknameColumn = 1
+#PeerColumnGroup1 = [2, 13]
+#PeerColumnGroup2 = 0
+#RowStart = 3
+#RegistryRowStart = 2
+
+#testNumber = 42
 
 # =============================================================================
 # cwd = os.getcwd()
@@ -482,8 +482,8 @@ def addParticipantsNames(keyLocation, dataFileLocation):
 
     for i in range(len(key)):
         for j in range(len(key[i])):
-            if len(key[i]) < len(max(key, key=len)):
-                for o in range(len(max(key, key=len))-len(key[i])):
+            if len(key[i]) < len(max(key)):
+                for o in range(len(max(key))-len(key[i])):
                     key[i].append("none")
 
     print('There are', len(ParticipantNames[0]), "participant names (not in the registry) that have been added to the key.")
@@ -518,10 +518,6 @@ def replacingFunc(dataFileLocation, keyLocation):
             if isinstance(data[i][j], str):  # check if each element is a string, if so convert to upper and remove whitespace
                 data[i][j] = data[i][j].lower()
                 data[i][j] = data[i][j].replace(" ", "")
-
-
-
-
 
     # Now, make the key all lowercase so that matching will work in the following logic
     for a in range(len(key)):
@@ -689,8 +685,28 @@ def compareKeytoData(keyLocation, dataFileLocation):
                            "Ambiguous Last Name", "First Name: LD", "First Name: Metaphone",
                            "Last Name: LD", "Last Name: Metaphone"])
 
-    #print(CompareList)
+    AmbiguousNameList = []
+    n = 1
+    for i in range(len(data)):
+        for j in range(len(data[i])):
+            if isinstance(data[i][j], str):
+                AmbiguousNameList.append([0+n, data[i][j]])
+                n += 1
 
+    FullList = [[]]
+    for i in range(len(key)):
+        FullList[0].append(key[i][0])
+    for g in range(len(AmbiguousNameList)):
+        FullList[0].append(AmbiguousNameList[g][0])
+
+    EdgeList = []
+    for a in range(len(key)):
+        for i in range(len(data)):
+            for j in range(len(data[i])):
+                for b in range(len(FullList)):
+                        for b in range(PeerColumnGroup1[1] - PeerColumnGroup1[0]):
+                            if data[i + RowStart][PeerColumnGroup1[0] + b] == FullList[b][0]:
+                                EdgeList.append([data[i + RowStart][ParticipantColumn], FullList[b][0]])
 
     # Write the "CompareList" to a csv file
     import csv
