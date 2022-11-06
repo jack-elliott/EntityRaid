@@ -688,6 +688,7 @@ def compareKeytoData(keyLocation, dataFileLocation):
                     KeyName = [key[i][j+1], key[i][j+2]]
 
                     if isinstance(AmbiguousName[0], str) and isinstance(AmbiguousName[1], str):
+
                         if AmbiguousName[0].isalpha() and AmbiguousName[1].isalpha():
 
                             ComparisonScoreFirstName = compare(KeyName[0], AmbiguousName[0])
@@ -706,28 +707,39 @@ def compareKeytoData(keyLocation, dataFileLocation):
                            "Ambiguous Last Name", "First Name: LD", "First Name: Metaphone",
                            "Last Name: LD", "Last Name: Metaphone"])
 
-    AmbiguousNameList = []
-    n = 1
-    for i in range(len(data)):
-        for j in range(len(data[i])):
-            if isinstance(data[i][j], str):
-                AmbiguousNameList.append([0+n, data[i][j]])
-                n += 1
+    List1 = list(range(PeerColumnGroup1[0], PeerColumnGroup1[1], 2))
+    List2 = list(range(PeerColumnGroup2[0], PeerColumnGroup2[1], 2))
 
-    FullList = [[]]
-    for i in range(len(key)):
-        FullList[0].append(key[i][0])
-    for g in range(len(AmbiguousNameList)):
-        FullList[0].append(AmbiguousNameList[g][0])
+    PeerList = List1 + List2
 
     EdgeList = []
-    for a in range(len(key)):
-        for i in range(len(data)):
-            for j in range(len(data[i])):
-                for b in range(len(FullList)):
-                    for b in range(PeerColumnGroup1[1] - PeerColumnGroup1[0]):
-                        if data[i + RowStart][PeerColumnGroup1[0] + b] == FullList[b][0]:
-                            EdgeList.append([data[i + RowStart][ParticipantColumn], FullList[b][0]])
+
+    for i in range(len(data)):
+        for columns in PeerList:
+            EdgeList.append([data[i + RowStart][ParticipantColumn], data[i + RowStart][columns]])
+            #    EdgeList.append([data[i + RowStart][ParticipantColumn], FullList[b][0]])
+    # AmbiguousNameList = []
+    # n = 1
+    # for i in range(len(data)):
+    #     for j in range(len(data[i])):
+    #         if isinstance(data[i][j], str):
+    #             AmbiguousNameList.append([0+n, data[i][j]])
+    #             n += 1
+    #
+    # FullList = [[]]
+    # for i in range(len(key)):
+    #     FullList[0].append(key[i][0])
+    # for g in range(len(AmbiguousNameList)):
+    #     FullList[0].append(AmbiguousNameList[g][0])
+    #
+    # EdgeList = []
+    # for a in range(len(key)):
+    #     for i in range(len(data)):
+    #         for j in range(len(data[i])):
+    #             for b in range(len(FullList)):
+    #                 for b in range(PeerColumnGroup1[1] - PeerColumnGroup1[0]):
+    #                     if data[i + RowStart][PeerColumnGroup1[0] + b] == FullList[b][0]:
+    #                         EdgeList.append([data[i + RowStart][ParticipantColumn], FullList[b][0]])
 
     # Write the "CompareList" to a csv file
     import csv
