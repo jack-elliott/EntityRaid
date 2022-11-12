@@ -24,47 +24,47 @@ import os
 #registryLocation = r'C:/Users/A02234125/Desktop/ActualRoster.csv'
 
 ######### ADAM LOCATION ######
-dataFileLocation = '/Users/adamweaver/Documents/ActualSurveyData(09:28:2022).csv'
+#dataFileLocation = '/Users/adamweaver/Documents/ActualSurveyData(09:28:2022).csv'
 
 # This should be the file location on your computer of the key .csv
-keyLocation = '/Users/adamweaver/Desktop/SNA/ActualKey.csv'
+#keyLocation = '/Users/adamweaver/Desktop/SNA/ActualKey.csv'
 
 # This should be the absolute path file location of the registry data file
-registryLocation = '/Users/adamweaver/Desktop/SNA/ActualRoster(09:28:2022).csv'
+#registryLocation = '/Users/adamweaver/Desktop/SNA/ActualRoster(09:28:2022).csv'
 
 ##########
 
 ## ADAM SYNTHETIC LOCATION:
-#dataFileLocation = '/Users/adamweaver/Desktop/SNA/SyntheticInteractionData.csv'
+dataFileLocation = '/Users/adamweaver/Desktop/SNA/SyntheticInteractionData.csv'
 
 # This should be the file location on your computer of the key .csv
-#keyLocation = '/Users/adamweaver/Desktop/SNA/SyntheticKey(Fall2022).csv'
+keyLocation = '/Users/adamweaver/Desktop/SNA/SyntheticKey(Fall2022).csv'
 
 # This should be the absolute path file location of the registry data file
-#registryLocation = '/Users/adamweaver/Desktop/SNA/SyntheticRegistry.csv'
+registryLocation = '/Users/adamweaver/Desktop/SNA/SyntheticRegistry.csv'
 
 ###
 
 ##### REAL DATA VALUES ###
-ParticipantColumn = 21
-NicknameColumn = 25
-PeerColumnGroup1 = [26, 45]
-PeerColumnGroup2 = [87, 106]
-RowStart = 3
-RegistryRowStart = 2
-
-testNumber = 53
-
-#####
-## SYNTHETIC DATA VALUES ###
-#ParticipantColumn = 0
-#NicknameColumn = 1
-#PeerColumnGroup1 = [2, 13]
-#PeerColumnGroup2 = 0
+#ParticipantColumn = 21
+#NicknameColumn = 25
+#PeerColumnGroup1 = [26, 45]
+#PeerColumnGroup2 = [87, 106]
 #RowStart = 3
 #RegistryRowStart = 2
 
-#testNumber = 42
+#testNumber = 53
+
+#####
+## SYNTHETIC DATA VALUES ###
+ParticipantColumn = 0
+NicknameColumn = 1
+PeerColumnGroup1 = [2, 13]
+PeerColumnGroup2 = 0
+RowStart = 3
+RegistryRowStart = 2
+
+testNumber = 54
 
 # =============================================================================
 # cwd = os.getcwd()
@@ -702,44 +702,49 @@ def compareKeytoData(keyLocation, dataFileLocation):
                                                     ComparisonScoreFirstName[0], ComparisonScoreLastName[1],
                                                     ComparisonScoreLastName[0], ComparisonScoreLastName[1]])
 
+
+
     # Put titles on the "CompareList" sheet
     CompareList.insert(0, ["Key First Name", "Key Last Name", "Ambiguous First Name",
                            "Ambiguous Last Name", "First Name: LD", "First Name: Metaphone",
                            "Last Name: LD", "Last Name: Metaphone"])
 
-    List1 = list(range(PeerColumnGroup1[0], PeerColumnGroup1[1], 2))
-    List2 = list(range(PeerColumnGroup2[0], PeerColumnGroup2[1], 2))
 
-    PeerList = List1 + List2
+    List1 = list(range(PeerColumnGroup1[0], PeerColumnGroup1[1], 2))
+    if PeerColumnGroup2 != 0:
+        List2 = list(range(PeerColumnGroup2[0], PeerColumnGroup2[1], 2))
+        PeerList = List1 + List2
+    else:
+        PeerList = List1
+
+    AmbiguousList = []
+    for n in range(RowStart, len(data)):
+        for columns in PeerList:
+            print("CHECK", data[n][columns])
+            ambiguous = looper(data[n][columns], key)
+            print(ambiguous)
+            if ambiguous:
+                if n < 10:
+                    data[n][columns] = '0000' + str(n)
+                    AmbiguousList.append([data[n][columns], ['0000' + str(n)]])
+                if n >= 10:
+                    data[n][columns] = '000' + str(n)
+                    AmbiguousList.append([data[n][columns], ['000' + str(n)]])
+                if n >= 100:
+                    data[n][columns] = '00' + str(n)
+                    AmbiguousList.append([data[n][columns], ['00' + str(n)]])
+                if n >= 1000:
+                    data[n][columns] = '0' + str(n)
+                    AmbiguousList.append([data[n][columns], ['0' + str(n)]])
 
     EdgeList = []
 
-    for i in range(len(data)):
+    for i in range(RowStart, len(data)):
         for columns in PeerList:
-            EdgeList.append([data[i + RowStart][ParticipantColumn], data[i + RowStart][columns]])
-            #    EdgeList.append([data[i + RowStart][ParticipantColumn], FullList[b][0]])
-    # AmbiguousNameList = []
-    # n = 1
-    # for i in range(len(data)):
-    #     for j in range(len(data[i])):
-    #         if isinstance(data[i][j], str):
-    #             AmbiguousNameList.append([0+n, data[i][j]])
-    #             n += 1
-    #
-    # FullList = [[]]
-    # for i in range(len(key)):
-    #     FullList[0].append(key[i][0])
-    # for g in range(len(AmbiguousNameList)):
-    #     FullList[0].append(AmbiguousNameList[g][0])
-    #
-    # EdgeList = []
-    # for a in range(len(key)):
-    #     for i in range(len(data)):
-    #         for j in range(len(data[i])):
-    #             for b in range(len(FullList)):
-    #                 for b in range(PeerColumnGroup1[1] - PeerColumnGroup1[0]):
-    #                     if data[i + RowStart][PeerColumnGroup1[0] + b] == FullList[b][0]:
-    #                         EdgeList.append([data[i + RowStart][ParticipantColumn], FullList[b][0]])
+            EdgeList.append([data[i][ParticipantColumn], data[i][columns]])
+
+   # print(EdgeList)
+
 
     # Write the "CompareList" to a csv file
     import csv
@@ -783,3 +788,9 @@ dataFileLocation = str('DataforComparison'+str(testNumber)+'.csv')
 #dataFileLocaiton = '/Users/adamweaver/Documents/GitHub/DataforComparison43.csv'
 
 compareKeytoData(keyLocation, dataFileLocation)
+
+# Check what the synthetic data looks like and if the ambiguous list is getting added correctly (not ever being false)
+# THE AMBIGUOUS LIST NEEDS TO BE EVERY TWO!
+# Why is it every two?
+# Get replacing participant names to work
+
