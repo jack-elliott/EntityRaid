@@ -53,7 +53,7 @@ registryLocation = '/Users/adamweaver/Desktop/SNA/SyntheticRegistry.csv'
 #RowStart = 3
 #RegistryRowStart = 2
 
-#testNumber = 53
+#testNumber = 56
 
 #####
 ## SYNTHETIC DATA VALUES ###
@@ -64,7 +64,7 @@ PeerColumnGroup2 = 0
 RowStart = 3
 RegistryRowStart = 2
 
-testNumber = 54
+testNumber = 57
 
 # =============================================================================
 # cwd = os.getcwd()
@@ -104,6 +104,23 @@ def keyPosition(ParticipantName, key):
                 if ParticipantName[1] == key[i][j + 2]:
                     # If the name is already in the key, return location
                     return key[i][0] - 1
+
+    # if the name was not already in the key (made it here), return true
+    return True
+
+def concat_keyPosition(ParticipantName, key):
+    # now check each key row
+    for i in range(len(key)):
+
+        # now check each key column, first names are in cols 1,3,5,... last names col. 2,4,6,...
+        for j in range(len(key[i]) - 2):
+
+            # Check the first name in the key
+            concatenatedkeyname = key[i][j + 1] + key[i][j + 2]
+
+            if ParticipantName == concatenatedkeyname:
+
+                return key[i][0] - 1
 
     # if the name was not already in the key (made it here), return true
     return True
@@ -247,6 +264,8 @@ def addParticipantsNames(keyLocation, dataFileLocation):
     dfParticipantNames[0] = dfSplit[0]
     dfParticipantNames[1] = dfSplit[1]
     ParticipantNames = dfParticipantNames.values.tolist()
+
+    print(ParticipantNames)
 
     for h in range(len(key)):
         for u in range(len(key[h])-1):
@@ -440,8 +459,8 @@ def addParticipantsNames(keyLocation, dataFileLocation):
                         checktwo = looper([ParticipantNames[l][newNicknameColumn], ParticipantName[1]], key)
                         locationtwo = keyPosition([ParticipantNames[l][newNicknameColumn], ParticipantNames[1]], key)
 
-                        print(ParticipantName)
-                        print(ParticipantNames[l][newNicknameColumn])
+                      #  print(ParticipantName)
+                       # print(ParticipantNames[l][newNicknameColumn])
                       #  print(check)
                       #  print(checktwo)
 
@@ -462,7 +481,7 @@ def addParticipantsNames(keyLocation, dataFileLocation):
                                # print(locationtwo)
                                # print(location)
                                 if not isinstance(location, float):
-                                    print("LOCATION IS", location)
+                                   # print("LOCATION IS", location)
                                     key[location].insert(ActualColumnLocation, ParticipantNames[l][newNicknameColumn])
                                     key[location].insert(ActualColumnLocation + 1, ParticipantName[1])
 
@@ -576,6 +595,15 @@ def replacingFunc(dataFileLocation, keyLocation):
                                 data[i][q + PeerColumnGroup1[0]] = key[l][0]
                                 data[i][q + PeerColumnGroup1[0] + 1] = key[l][0]
 #  --------------------------- REPLACE PARTICIPANT'S SELF REPORTED NAMES --------------------------------------------  #
+
+    for i in range(RowStart, len(data)):
+
+        Location = concat_keyPosition(data[i][ParticipantColumn], key)
+        data[i][ParticipantColumn] = Location
+
+
+
+
                    # ParticipantSelfReportedNames = []
                 #    KeyName = [key[l][m+1], key[l][m+2]]
                  #   if isinstance(KeyName[1], float):
@@ -632,8 +660,8 @@ def compare(KeyName, AmbiguousName):
     from Levenshtein import distance as lev
     import phonetics
 # This is a simple Levenshtein Distance calculation from the library. I print this value to confirm its validity
-    print("KeyName is", KeyName)
-    print("Ambiguous Name is", AmbiguousName)
+    #print("KeyName is", KeyName)
+    #print("Ambiguous Name is", AmbiguousName)
     LevenshteinDistance = lev(KeyName, AmbiguousName)
 
 # This calculates the phonetic key according to the double metaphone for the KEY name
@@ -718,24 +746,37 @@ def compareKeytoData(keyLocation, dataFileLocation):
         PeerList = List1
 
     AmbiguousList = []
+    m = 1
     for n in range(RowStart, len(data)):
         for columns in PeerList:
-            print("CHECK", data[n][columns])
-            ambiguous = looper(data[n][columns], key)
-            print(ambiguous)
-            if ambiguous:
-                if n < 10:
-                    data[n][columns] = '0000' + str(n)
-                    AmbiguousList.append([data[n][columns], ['0000' + str(n)]])
-                if n >= 10:
-                    data[n][columns] = '000' + str(n)
-                    AmbiguousList.append([data[n][columns], ['000' + str(n)]])
-                if n >= 100:
-                    data[n][columns] = '00' + str(n)
-                    AmbiguousList.append([data[n][columns], ['00' + str(n)]])
-                if n >= 1000:
-                    data[n][columns] = '0' + str(n)
-                    AmbiguousList.append([data[n][columns], ['0' + str(n)]])
+            #print("CHECK", data[n][columns])
+            Name = [data[n][columns], data[n][columns + 1]]
+            c_one = Name[0].isalpha()
+            c_two = Name[1].isalpha()
+
+            #ambiguous = looper(data[n][columns], key)
+            #print(ambiguous)
+            if c_one and c_two:
+                if m < 10:
+                    data[n][columns] = '10000' + str(m)
+                    data[n][columns+1] = '10000' + str(m)
+                    AmbiguousList.append([Name, ['10000' + str(m)]])
+                    m += 1
+                if m >= 10:
+                    data[n][columns] = '1000' + str(m)
+                    data[n][columns + 1] = '1000' + str(m)
+                    AmbiguousList.append([Name, ['1000' + str(m)]])
+                    m += 1
+                if m >= 100:
+                    data[n][columns] = '100' + str(m)
+                    data[n][columns + 1] = '100' + str(m)
+                    AmbiguousList.append([Name, ['100' + str(m)]])
+                    m += 1
+                if m >= 1000:
+                    data[n][columns] = '0' + str(m)
+                    data[n][columns + 1] = '0' + str(m)
+                    AmbiguousList.append([Name, ['0' + str(m)]])
+                    m += 1
 
     EdgeList = []
 
@@ -743,7 +784,8 @@ def compareKeytoData(keyLocation, dataFileLocation):
         for columns in PeerList:
             EdgeList.append([data[i][ParticipantColumn], data[i][columns]])
 
-   # print(EdgeList)
+    print(AmbiguousList)
+    print(EdgeList)
 
 
     # Write the "CompareList" to a csv file
