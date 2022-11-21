@@ -72,6 +72,8 @@ testNumber = 57
 # =============================================================================
 
 # END USER INPUT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+import numpy as np
+
 def looper(ParticipantName, key):
     # now check each key row
     for i in range(len(key)):
@@ -107,6 +109,29 @@ def keyPosition(ParticipantName, key):
 
     # if the name was not already in the key (made it here), return true
     return True
+
+
+def edgeToAdjacency(edgeList, nodeCount="Auto"):
+    # find the necessary size of the adjacency matrix,
+    # NOTE if isolates are not within the max of the edge lsit, will be left out
+    if nodeCount == "Auto":
+        N = np.amax(edgeList)
+        print("Automatic ", end="")
+    else:
+        N = nodeCount
+        print("Manual ", end="")
+
+    print("N = " + str(N))
+
+    # initialize the NxN adjacency Matrix A
+    A = np.zeros((N, N))
+
+    # add the edges to A
+    for i in range(len(edgeList)):
+        for j in range(len(edgeList[i])):
+            A[edgeList[i][0] - 1][edgeList[i][1] - 1] = 1
+
+    return (A)
 
 def concat_keyPosition(ParticipantName, key):
     # now check each key row
@@ -602,22 +627,6 @@ def replacingFunc(dataFileLocation, keyLocation):
         data[i][ParticipantColumn] = Location
 
 
-
-
-                   # ParticipantSelfReportedNames = []
-                #    KeyName = [key[l][m+1], key[l][m+2]]
-                 #   if isinstance(KeyName[1], float):
-                 #       ParticipantSelfReportedNames.append([key[l][m+1], key[l][m+2]])
-                 #   if isinstance(KeyName[0], float):
-                  #      ParticipantSelfReportedNames.append([key[l][m+1], key[l][m+2]])
-                 #       print(KeyName[0])
-                  #  if not isinstance(KeyName[1], float) and not isinstance(KeyName[0], float):
-                   #     print("The data is now here")
-                    #    KeyName[0] = ''.join(KeyName)
-                    #    if data[i][ParticipantColumn] == KeyName[0]:
-                     #       data[i][ParticipantColumn] = key[l][0]
-                     #       resolvedcount += 1
-
     print("The number of names resolved in the exact replacement stage is:", resolvedcount)
    # print("Participants who did not report their last name are:", ParticipantSelfReportedNames)
 
@@ -783,10 +792,15 @@ def compareKeytoData(keyLocation, dataFileLocation):
     for i in range(RowStart, len(data)):
         for columns in PeerList:
             EdgeList.append([data[i][ParticipantColumn], data[i][columns]])
+    for i in range(RowStart, len(data)):
+        EdgeList.append([data[i][ParticipantColumn], data[i][ParticipantColumn]])
 
-    print(AmbiguousList)
-    print(EdgeList)
+    for i in range(len(EdgeList)):
+        for j in range(len(EdgeList[i])):
+            EdgeList[i][j] = int(EdgeList[i][j])
+    AdjacencyMatrix = edgeToAdjacency(EdgeList)
 
+    print(AdjacencyMatrix)
 
     # Write the "CompareList" to a csv file
     import csv
