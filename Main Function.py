@@ -35,13 +35,13 @@ import os
 ##########
 
 ## ADAM SYNTHETIC LOCATION:
-dataFileLocation = '/Users/adamweaver/Desktop/SNA/SyntheticInteractionData.csv'
+dataFileLocation = 'SyntheticInteractionData.csv'
 
 # This should be the file location on your computer of the key .csv
-keyLocation = '/Users/adamweaver/Desktop/SNA/SyntheticKey(Fall2022).csv'
+keyLocation = 'SyntheticKey.csv'
 
 # This should be the absolute path file location of the registry data file
-registryLocation = '/Users/adamweaver/Desktop/SNA/SyntheticRegistry.csv'
+registryLocation = 'SyntheticRegistry.csv'
 
 ###
 
