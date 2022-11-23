@@ -64,7 +64,7 @@ PeerColumnGroup2 = 0
 RowStart = 3
 RegistryRowStart = 2
 
-testNumber = 57
+testNumber = 66
 
 # =============================================================================
 # cwd = os.getcwd()
@@ -248,9 +248,12 @@ def addRegistryNames(registryLocation):
                 key.append([len(key), FinalRegistry[l][m], FinalRegistry[l][m + 1]])
 
     import csv
-    with open('Key_Registry'+str(testNumber)+'.csv', 'w', encoding='UTF8', newline='') as f:
-        writer = csv.writer(f)
 
+    mypath = 'output/Iteration' + str(testNumber) + '/'
+    if not os.path.isdir(mypath):
+        os.makedirs(mypath)
+    with open(mypath + 'Key_Registry' + str(testNumber) + '.csv', 'w', encoding='UTF8', newline='') as f:
+        writer = csv.writer(f)
         # write the .csv
         writer.writerows(key)
 
@@ -542,7 +545,11 @@ def addParticipantsNames(keyLocation, dataFileLocation):
     print("The total size of the key after being initialized is", len(key))
 
     import csv
-    with open('KeyAfterParticipantNames'+str(testNumber)+'.csv', 'w', encoding='UTF8', newline='') as f:
+
+    mypath = 'output/Iteration' + str(testNumber) + '/'
+    if not os.path.isdir(mypath):
+        os.makedirs(mypath)
+    with open(mypath + 'KeyAfterParticipantNames' + str(testNumber) + '.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
 
         # write the .csv
@@ -646,7 +653,11 @@ def replacingFunc(dataFileLocation, keyLocation):
     print("The number of remaining names (ambiguous) is:", (ambiguouscount/2))
     # write the data file to a .csv
     import csv
-    with open('DataforComparison'+str(testNumber)+'.csv', 'w', encoding='UTF8', newline='') as f:
+
+    mypath = 'output/Iteration' + str(testNumber) + '/'
+    if not os.path.isdir(mypath):
+        os.makedirs(mypath)
+    with open(mypath +'DataforComparison'+str(testNumber)+'.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
 
         # write the .csv
@@ -804,7 +815,10 @@ def compareKeytoData(keyLocation, dataFileLocation):
 
     # Write the "CompareList" to a csv file
     import csv
-    with open('CompleteTrialIteration'+str(testNumber)+'.csv', 'w', encoding='UTF8', newline='') as f:
+    mypath = 'output/Iteration'+str(testNumber)+'/'
+    #if not os.path.isdir(mypath):
+     #   os.makedirs(mypath)
+    with open(mypath+'CompleteTrialIteration'+str(testNumber)+'.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
     
     #write the .csv
@@ -813,11 +827,12 @@ def compareKeytoData(keyLocation, dataFileLocation):
     #spit these out so we can check to make sure deals work
     return CompareList
 
+
 ########################################### MAIN FUNCTION LOGIC ########################################################
 
 
 # EVENTUALLY I NEED TO MAKE COPIES OF THE REAL DATA HERE
-
+mypath = 'output/Iteration'+str(testNumber)+'/'
 #check if the output files exist (due to the testNumber already being used) If so, delete prior to writing new files
 if os.path.isdir(str('Key_Registry'+str(testNumber)+'.csv')):
     
@@ -829,15 +844,15 @@ if os.path.isdir(str('Key_Registry'+str(testNumber)+'.csv')):
 #rite the output files to the working directory of main()
 key = addRegistryNames(registryLocation)
 
-keyLocation = str('Key_Registry'+str(testNumber)+'.csv')
+keyLocation = str(mypath+'Key_Registry'+str(testNumber)+'.csv')
 
 key = addParticipantsNames(keyLocation, dataFileLocation)
 
-keyLocation = str('KeyAfterParticipantNames'+str(testNumber)+'.csv')
+keyLocation = str(mypath+'KeyAfterParticipantNames'+str(testNumber)+'.csv')
 
 data = replacingFunc(dataFileLocation, keyLocation)
 
-dataFileLocation = str('DataforComparison'+str(testNumber)+'.csv')
+dataFileLocation = str(mypath+'DataforComparison'+str(testNumber)+'.csv')
 
 #keyLocation = '/Users/adamweaver/Documents/GitHub/KeyAfterParticipantNames43.csv'
 
