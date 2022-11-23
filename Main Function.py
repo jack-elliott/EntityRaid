@@ -64,7 +64,7 @@ PeerColumnGroup2 = 0
 RowStart = 3
 RegistryRowStart = 2
 
-testNumber = 66
+testNumber = 67
 
 # =============================================================================
 # cwd = os.getcwd()
