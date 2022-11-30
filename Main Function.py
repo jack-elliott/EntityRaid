@@ -24,47 +24,48 @@ import os
 #registryLocation = r'C:/Users/A02234125/Desktop/ActualRoster.csv'
 
 ######### ADAM LOCATION ######
-#dataFileLocation = '/Users/adamweaver/Documents/ActualSurveyData(09:28:2022).csv'
+dataFileLocation = '/Users/adamweaver/Documents/ActualSurveyData(09:28:2022).csv'
 
 # This should be the file location on your computer of the key .csv
-#keyLocation = '/Users/adamweaver/Desktop/SNA/ActualKey.csv'
+keyLocation = '/Users/adamweaver/Desktop/SNA/ActualKey.csv'
 
 # This should be the absolute path file location of the registry data file
-#registryLocation = '/Users/adamweaver/Desktop/SNA/ActualRoster(09:28:2022).csv'
+registryLocation = '/Users/adamweaver/Desktop/SNA/ActualRoster(09:28:2022).csv'
 
 ##########
 
 ## ADAM SYNTHETIC LOCATION:
-dataFileLocation = 'SyntheticInteractionData.csv'
+#dataFileLocation = 'SyntheticInteractionData.csv'
 
 # This should be the file location on your computer of the key .csv
-keyLocation = 'SyntheticKey.csv'
+#keyLocation = 'SyntheticKey.csv'
 
 # This should be the absolute path file location of the registry data file
-registryLocation = 'SyntheticRegistry.csv'
+#registryLocation = 'SyntheticRegistry.csv'
 
 ###
 
 ##### REAL DATA VALUES ###
-#ParticipantColumn = 21
-#NicknameColumn = 25
-#PeerColumnGroup1 = [26, 45]
-#PeerColumnGroup2 = [87, 106]
-#RowStart = 3
-#RegistryRowStart = 2
-
-#testNumber = 56
-
-#####
-## SYNTHETIC DATA VALUES ###
-ParticipantColumn = 0
-NicknameColumn = 1
-PeerColumnGroup1 = [2, 13]
-PeerColumnGroup2 = 0
+ParticipantColumn = 21
+NicknameColumn = 25
+ANumberColumn = 24
+PeerColumnGroup1 = [26, 45]
+PeerColumnGroup2 = [87, 106]
 RowStart = 3
 RegistryRowStart = 2
 
-testNumber = 68
+testNumber = 71
+
+#####
+## SYNTHETIC DATA VALUES ###
+#ParticipantColumn = 0
+#NicknameColumn = 1
+#PeerColumnGroup1 = [2, 13]
+#PeerColumnGroup2 = 0
+#RowStart = 3
+#RegistryRowStart = 2
+
+#testNumber = 70
 
 # =============================================================================
 # cwd = os.getcwd()
@@ -110,12 +111,30 @@ def keyPosition(ParticipantName, key):
     # if the name was not already in the key (made it here), return true
     return True
 
+def dataPosition(ParticipantName, data, duplicateName):
+    # now check each key row
+    for i in range(len(key)):
+
+        # now check each key column, first names are in cols 1,3,5,... last names col. 2,4,6,...
+        for j in range(len(key[i]) - 2):
+
+            # Check the first name in the key
+            if ParticipantName[0] == key[i][j + 1]:
+
+                # Check the second name IF the first name matches
+                if ParticipantName[1] == key[i][j + 2]:
+                    # If the name is already in the key, return location
+                    return key[i][0] - 1
+
+    # if the name was not already in the key (made it here), return true
+    return True
+
 
 def edgeToAdjacency(edgeList, nodeCount="Auto"):
     # find the necessary size of the adjacency matrix,
-    # NOTE if isolates are not within the max of the edge lsit, will be left out
+    # NOTE if isolates are not within the max of the edge list, will be left out
     if nodeCount == "Auto":
-        N = np.amax(edgeList)
+        N = len(edgeList)
         print("Automatic ", end="")
     else:
         N = nodeCount
@@ -131,7 +150,7 @@ def edgeToAdjacency(edgeList, nodeCount="Auto"):
         for j in range(len(edgeList[i])):
             A[edgeList[i][0] - 1][edgeList[i][1] - 1] = 1
 
-    return (A)
+    return A
 
 def concat_keyPosition(ParticipantName, key):
     # now check each key row
@@ -141,7 +160,7 @@ def concat_keyPosition(ParticipantName, key):
         for j in range(len(key[i]) - 2):
 
             # Check the first name in the key
-            concatenatedkeyname = key[i][j + 1] + key[i][j + 2]
+            concatenatedkeyname = str(key[i][j + 1]) + str(key[i][j + 2])
 
             if ParticipantName == concatenatedkeyname:
 
@@ -224,7 +243,6 @@ def addRegistryNames(registryLocation):
             MultipleLastNames.append(name)
         if hyphen:
             MultipleLastNames.append(name)
-
 
     for names in MultipleLastNames:
         if names in FinalRegistry:
@@ -708,6 +726,7 @@ def compareKeytoData(keyLocation, dataFileLocation):
     # read in the key file to a list
     import pandas as pd
     key = pd.read_csv(keyLocation, header=None)
+    key.fillna('none', inplace=True)
     key = key.values.tolist()
 
     # read in the data file of interest to a list
@@ -738,7 +757,8 @@ def compareKeytoData(keyLocation, dataFileLocation):
                     if isinstance(AmbiguousName[0], str) and isinstance(AmbiguousName[1], str):
 
                         if AmbiguousName[0].isalpha() and AmbiguousName[1].isalpha():
-
+                            print("Key name that is messing", KeyName[0])
+                            print("Ambiguous Name that is messing", AmbiguousName[0])
                             ComparisonScoreFirstName = compare(KeyName[0], AmbiguousName[0])
 
                             ComparisonScoreLastName = compare(KeyName[1], AmbiguousName[1])
@@ -765,40 +785,54 @@ def compareKeytoData(keyLocation, dataFileLocation):
     else:
         PeerList = List1
 
+    NumberOfHighConfidenceNames = len(key)
+
+    print("Number of High Confidence Names is as follows:", NumberOfHighConfidenceNames)
+
+    # Length + 1 is what I need, HOWEVER, I need the index of the length
+    # Start appending those values at that index.
+
     AmbiguousList = []
-    m = 1
+    m = 0
     for n in range(RowStart, len(data)):
         for columns in PeerList:
             #print("CHECK", data[n][columns])
-            Name = [data[n][columns], data[n][columns + 1]]
+            Name = [str(data[n][columns]), str(data[n][columns + 1])]
             c_one = Name[0].isalpha()
             c_two = Name[1].isalpha()
 
             #ambiguous = looper(data[n][columns], key)
             #print(ambiguous)
             if c_one and c_two:
-                if m < 10:
-                    data[n][columns] = '10000' + str(m)
-                    data[n][columns+1] = '10000' + str(m)
-                    AmbiguousList.append([Name, ['10000' + str(m)]])
-                    m += 1
-                if m >= 10:
-                    data[n][columns] = '1000' + str(m)
-                    data[n][columns + 1] = '1000' + str(m)
-                    AmbiguousList.append([Name, ['1000' + str(m)]])
-                    m += 1
-                if m >= 100:
-                    data[n][columns] = '100' + str(m)
-                    data[n][columns + 1] = '100' + str(m)
-                    AmbiguousList.append([Name, ['100' + str(m)]])
-                    m += 1
-                if m >= 1000:
-                    data[n][columns] = '0' + str(m)
-                    data[n][columns + 1] = '0' + str(m)
-                    AmbiguousList.append([Name, ['0' + str(m)]])
-                    m += 1
+                AmbiguousNumber = len(key) + m
+                print("AmbiguousNumber is", AmbiguousNumber)
+                data[n][columns] = AmbiguousNumber
+                data[n][columns + 1] = AmbiguousNumber
+                AmbiguousList.append([Name, [AmbiguousNumber]])
+                m += 1
+               # if m < 10:
+                 #   data[n][columns] = '10000' + str(m)
+                  #  data[n][columns+1] = '10000' + str(m)
+                  #  AmbiguousList.append([Name, ['10000' + str(m)]])
+                 #   m += 1
+               # if m >= 10:
+                   # data[n][columns] = '1000' + str(m)
+                   # data[n][columns + 1] = '1000' + str(m)
+                   # AmbiguousList.append([Name, ['1000' + str(m)]])
+                  #  m += 1
+              #  if m >= 100:
+                   # data[n][columns] = '100' + str(m)
+                   # data[n][columns + 1] = '100' + str(m)
+                   # AmbiguousList.append([Name, ['100' + str(m)]])
+                  #  m += 1
+               # if m >= 1000:
+                   # data[n][columns] = '0' + str(m)
+                   # data[n][columns + 1] = '0' + str(m)
+                   # AmbiguousList.append([Name, ['0' + str(m)]])
+                   # m += 1
 
     EdgeList = []
+
 
     for i in range(RowStart, len(data)):
         for columns in PeerList:
@@ -809,6 +843,8 @@ def compareKeytoData(keyLocation, dataFileLocation):
     for i in range(len(EdgeList)):
         for j in range(len(EdgeList[i])):
             EdgeList[i][j] = int(EdgeList[i][j])
+
+    print(EdgeList)
     AdjacencyMatrix = edgeToAdjacency(EdgeList)
 
     print(AdjacencyMatrix)
