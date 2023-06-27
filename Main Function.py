@@ -12,36 +12,15 @@
 import os
 
 # USER INPUT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# This should be the absolute path file location of the qualtrics data file
 
-######### JACK LOCATION ######
-#dataFileLocation = r'C:/Users/A02234125/Desktop/ActualSurveyData.csv'
-
-# This should be the file location on your computer of the key .csv
-#keyLocation = r'C:/Users/A02234125/Desktop/ActualKey.csv'
-
-# This should be the absolute path file location of the registry data file
-#registryLocation = r'C:/Users/A02234125/Desktop/ActualRoster.csv'
-
-######### ADAM LOCATION ######
-dataFileLocation = '/Users/adamweaver/Documents/ActualSurveyData(09:28:2022).csv'
+## SYNTHETIC SAMPLE INPUTS:
+dataFileLocation = 'SyntheticInteractionData.csv'
 
 # This should be the file location on your computer of the key .csv
-keyLocation = '/Users/adamweaver/Desktop/SNA/ActualKey.csv'
+keyLocation = 'SyntheticKey.csv'
 
 # This should be the absolute path file location of the registry data file
-registryLocation = '/Users/adamweaver/Desktop/SNA/ActualRoster(09:28:2022).csv'
-
-##########
-
-## ADAM SYNTHETIC LOCATION:
-#dataFileLocation = 'SyntheticInteractionData.csv'
-
-# This should be the file location on your computer of the key .csv
-#keyLocation = 'SyntheticKey.csv'
-
-# This should be the absolute path file location of the registry data file
-#registryLocation = 'SyntheticRegistry.csv'
+registryLocation = 'SyntheticRegistry.csv'
 
 ###
 
