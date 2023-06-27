@@ -14,26 +14,14 @@ import os
 # USER INPUT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 ## SYNTHETIC SAMPLE INPUTS:
-dataFileLocation = 'SyntheticInteractionData.csv'
+dataFileLocation = 'SyntheticInteractionDataCSV.csv'
 
 # This should be the file location on your computer of the key .csv
-keyLocation = 'SyntheticKey.csv'
+keyLocation = 'SyntheticKeyCSV.csv'
 
 # This should be the absolute path file location of the registry data file
-registryLocation = 'SyntheticRegistry.csv'
+registryLocation = 'SyntheticRosterCSV.csv'
 
-###
-
-##### REAL DATA VALUES ###
-ParticipantColumn = 21
-NicknameColumn = 25
-ANumberColumn = 24
-newANumberColumn = 3
-newParticipantNamesColumns = [0, 1]
-PeerColumnGroup1 = [26, 45]
-PeerColumnGroup2 = [87, 106]
-RowStart = 3
-RegistryRowStart = 2
 
 StringLastNameThresehold = 2
 StringFirstNameThresehold = 3
@@ -47,18 +35,16 @@ ConsolidatePhoneticFirstNameThresehold = 1
 
 testNumber = 127
 
-#10:50 is 30 mins inrefdt
-
-#####
 ## SYNTHETIC DATA VALUES ###
-#ParticipantColumn = 0
-#NicknameColumn = 1
-#PeerColumnGroup1 = [2, 13]
-#PeerColumnGroup2 = 0
-#RowStart = 3
-#RegistryRowStart = 2
-
-#testNumber = 70
+ParticipantColumn = 0
+NicknameColumn = 1
+ANumberColumn = 2
+newANumberColumn = 3
+newParticipantNamesColumns = [0, 1]
+PeerColumnGroup1 = [3, 14]
+PeerColumnGroup2 = 0
+RowStart = 3
+RegistryRowStart = 2
 
 # =============================================================================
 # cwd = os.getcwd()
