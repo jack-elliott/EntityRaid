@@ -33,7 +33,7 @@ ConsolidateStringFirstNameThresehold = 3
 ConsolidatePhoneticLastNameThresehold = 1
 ConsolidatePhoneticFirstNameThresehold = 1
 
-testNumber = 127
+testNumber = 1
 
 ## SYNTHETIC DATA VALUES ###
 ParticipantColumn = 0
