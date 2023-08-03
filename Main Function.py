@@ -125,6 +125,13 @@ def ambiguousKey(data, key):
                             if Check == 'butterfly':
                                 AmbiguousKey.append([LengthOfHighConfidenceKey + m, data[i][columns], data[i][columns+1]])
                                 m += 1
+                                
+
+    mylist = np.asarray(AmbiguousKey)
+    
+    np.savetxt('output/AmbiguousFullNameKey' + str(testNumber)+'.csv',mylist, fmt='%s',delimiter = ',')
+                      
+    
     return AmbiguousKey
 
 def keyPosition(ParticipantName, key):
@@ -434,7 +441,7 @@ def addRegistryNames(registryLocation):
     print("The length of the key after registry initialization is:", len(key))
     import csv
 
-    mypath = 'output/Iteration' + str(testNumber) + '/'
+    mypath = 'output/'
     if not os.path.isdir(mypath):
         os.makedirs(mypath)
     with open(mypath + 'Key_Registry' + str(testNumber) + '.csv', 'w', encoding='UTF8', newline='') as f:
@@ -932,7 +939,7 @@ def addParticipantsNames(keyLocation, dataFileLocation):
 
     import csv
 
-    mypath = 'output/Iteration' + str(testNumber) + '/'
+    mypath = 'output/'
     if not os.path.isdir(mypath):
         os.makedirs(mypath)
         
@@ -1075,7 +1082,7 @@ def replacingFunc(dataFileLocation, keyLocation):
     # write the data file to a .csv
     import csv
 
-    mypath = 'output/Iteration' + str(testNumber) + '/'
+    mypath = 'output/'
     if not os.path.isdir(mypath):
         os.makedirs(mypath)
     with open(mypath +'DataforComparison'+str(testNumber)+'.csv', 'w', encoding='UTF8', newline='') as f:
@@ -1207,7 +1214,7 @@ def compareKeytoData(keyLocation, dataFileLocation):
 
     # Write the "CompareList" to a csv file
     import csv
-    mypath = 'output/Iteration'+str(testNumber)+'/'
+    mypath = 'output/'
     if not os.path.isdir(mypath):
         os.makedirs(mypath)
 
@@ -1234,6 +1241,7 @@ def remainingAmbiguousNames(keyLocation, dataFileLocation):
 
     # read in the data file of interest to a list
     data = pd.read_csv(dataFileLocation, header=None)
+    
     data = data.values.tolist()
 
     List1 = list(range(PeerColumnGroup1[0], PeerColumnGroup1[1], 2))
@@ -1243,6 +1251,8 @@ def remainingAmbiguousNames(keyLocation, dataFileLocation):
     else:
         PeerList = List1
     FullNameAmbiguousKey = ambiguousKey(data, key)
+    
+    
 
     print("There are", len(FullNameAmbiguousKey), "full-name non-participant references in the key")
 
@@ -1288,6 +1298,9 @@ def remainingAmbiguousNames(keyLocation, dataFileLocation):
                         data[k][columns + 1] = NewAmbiguousNumber
                         o += 1
 
+    mylist = np.asarray(FirstNameList)
+    np.savetxt('output/AmbiguousFirstNameKey' + str(testNumber)+'.csv',mylist, fmt='%s',delimiter = ',')
+        
     print("There are:", h, "valid participant responses in the data")
     print("There are:", len(FirstNameList), "first-name only ambiguous references in the data")
     print("There are:", len(ParticipantFirstNameList), "first-name only ambiguous references in the data")
@@ -1307,7 +1320,7 @@ def remainingAmbiguousNames(keyLocation, dataFileLocation):
     AdjacencyMatrix = edgeToAdjacency(EdgeList)
 
     import csv
-    mypath = 'output/Iteration' + str(testNumber) + '/'
+    mypath = 'output/'
     if not os.path.isdir(mypath):
         os.makedirs(mypath)
 
@@ -1324,7 +1337,7 @@ def remainingAmbiguousNames(keyLocation, dataFileLocation):
 ########################################### MAIN FUNCTION LOGIC ########################################################
 
 # EVENTUALLY I NEED TO MAKE COPIES OF THE REAL DATA HERE
-mypath = 'output/Iteration'+str(testNumber)+'/'
+mypath = 'output/'
 #check if the output files exist (due to the testNumber already being used) If so, delete prior to writing new files
 if os.path.isdir(str('Key_Registry'+str(testNumber)+'.csv')):
    
