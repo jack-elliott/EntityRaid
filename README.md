@@ -49,8 +49,9 @@ EntityRAID resolves references in the data in stepwise stages, starting with ref
 
 # General Information
 
-  Data manipulation uses pandas for .csv data manipulation, and pythonic indexing throughout. Please see the example file for how your interaction data
-  and initialized key should be organized. 
-
-
-
+  Data manipulation uses pandas for .csv data manipulation, and pythonic indexing throughout. 
+  
+  Please see the example file for how your interaction data and initialized key should be organized and run these files FIRST.
+  
+  You will need to input your specific GitHub file path and change the numeric inputs before running. If you can 
+  acheive correct results using our provided synthetic data, you can be confident in using a larger, real data set.
