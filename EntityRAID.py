@@ -1234,15 +1234,6 @@ def compareKeytoData(keyLocation, dataFileLocation):
 
 def remainingAmbiguousNames(keyLocation, dataFileLocation):
 
-    NewDuplicates = [['ethan', 'black'], ['jonathan', 'wright'], ['jordan', 'olsen'], ['josh', 'taylor'],
-                     ['ryan', 'christensen'],
-                     ['taylor', 'davis'], ['thomas', 'hansen'], ['zachary', 'smith'], ['matt', 'jensen'],
-                     ['matthew', 'jensen'],
-                     ['ethanblack', ''], ['jonathanwright', ''], ['jordanolsen', ''], ['joshtaylor', ''],
-                     ['ryanchristensen', ''],
-                     ['taylordavis', ''], ['thomashansen', ''], ['zacharysmith', ''], ['mattjensen', ''],
-                     ['matthewjensen', '']]
-
     import pandas as pd
 
     key = pd.read_csv(keyLocation, header=None)
