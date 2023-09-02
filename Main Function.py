@@ -1,8 +1,7 @@
-# ============================================ DEFINE FUNCTIONS ====================================================== #
-# SOCIAL NETWORK DISAMBIGUATION
+# EntityRAID: Entity Resolution for Ambiguous Interaction Data
+# EntityRAID is intended for large-data SNA
 
 # INSTRUCTIONS AND IMPLICATIONS:
-
 
 #    Key formatting and positioning should be exactly similar to ours
 #    Interaction data can vary in positioning, but not in formatting
@@ -12,49 +11,56 @@
 import os
 
 # USER INPUT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# This should be the absolute path file location of the qualtrics data file in .csv
+# USE OUR EXAMPLES FOR A BETTER UNDERSTANDING OF THE CODE
 
-## SYNTHETIC SAMPLE INPUTS:
-dataFileLocation = 'SyntheticInteractionDataCSV.csv'
+######### ADAM LOCATION ######
 
-# This should be the file location on your computer of the key .csv
-keyLocation = 'SyntheticKeyCSV.csv'
+dataFileLocation = 'INPUTDATAFILELOCATIONHERE.csv'
 
-# This should be the absolute path file location of the registry data file
-registryLocation = 'SyntheticRosterCSV.csv'
+keyLocation = 'INPUTKEYFILELOCATIONHERE.csv'
 
+registryLocation = 'INPUTREGISTRYLOCATIONHERE.csv'
+
+# The following are input variables that tell the code how the data is organized. We left the values we used
+# for our actual data for an example
+
+
+ParticipantColumn = 21  # Which column the participants self-report their names
+NicknameColumn = 25  # Which column the participants self-report their nicknames
+ANumberColumn = 24  # Which column the participants report their school number (if applicable)
+PeerColumnGroup1 = [26, 45]  # Which columns participants report their peer interactions
+PeerColumnGroup2 = [87, 106]  # If there is a second group (add more), add these columns here. If not, report []
+RowStart = 4  # After inspecting your data file csv, which row does the actual data start
+RegistryRowStart = 2  # Similar to above, but for the registry (if applicable)
+
+
+# PLEASE INPUT THE THRESHOLDS FOR REPORTING; CONSOLIDATION
+# From our experience, the consolidation threshold produces closest to accurate results. Adjust the first set if
+# you would like to see for yourself
 
 StringLastNameThresehold = 2
-StringFirstNameThresehold = 3
+StringFirstNameThresehold = 2
 PhoneticLastNameThresehold = 1
 PhoneticFirstNameThresehold = 1
 
 ConsolidateStringLastNameThresehold = 2
-ConsolidateStringFirstNameThresehold = 3
+ConsolidateStringFirstNameThresehold = 2
 ConsolidatePhoneticLastNameThresehold = 1
 ConsolidatePhoneticFirstNameThresehold = 1
 
-testNumber = 1
+testNumber = 184  # This number may help in data management, especially if you are editing this code
 
-## SYNTHETIC DATA VALUES ###
-ParticipantColumn = 0
-NicknameColumn = 1
-ANumberColumn = 2
-newANumberColumn = 3
-newParticipantNamesColumns = [0, 1]
-PeerColumnGroup1 = [3, 14]
-PeerColumnGroup2 = 0
-RowStart = 3
-RegistryRowStart = 2
-
-# =============================================================================
-# cwd = os.getcwd()
-# print(dataFileLocation)
-# =============================================================================
 
 # END USER INPUT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+newANumberColumn = 3
+newParticipantNamesColumns = [0, 1]
 import numpy as np
 
-def looper(ParticipantName, key):
+# BEGIN PRELIMINARY FUNCTIONS ------------------------------------------------------------------------------------------
+
+def looper(ParticipantName, key):  # General looper
     # now check each key row
     for i in range(len(key)):
 
@@ -72,7 +78,8 @@ def looper(ParticipantName, key):
     # if the name was not already in the key (made it here), return true
     return True
 
-def alphaStrip(string):
+
+def alphaStrip(string):  # Remove alpha characters from a string
     out = ""
 
     for i in range(len(string)):
@@ -82,22 +89,30 @@ def alphaStrip(string):
 
     return out
 
-def ambiguouskeylooper(ParticipantName, AmbiguousKey):
+
+def ambiguouskeylooper(ParticipantName, AmbiguousKey):  # Loop through ambiguous key. Returns index if found
 
     for i in range(len(AmbiguousKey)):
 
-        # Check the first name in the key
         if ParticipantName[0] == AmbiguousKey[i][1]:
 
-            # Check the second name IF the first name matches
             if ParticipantName[1] == AmbiguousKey[i][2]:
-                # If the name is already in the key, return false (makes sense later)
+
                 return AmbiguousKey[i][0]
 
-    # if the name was not already in the key (made it here), return true
     return 'butterfly'
 
-def ambiguousKey(data, key):
+
+def DuplicateKeyLooper(ParticipantName, DuplicateList):  # General looper for duplicate key
+
+    for i in range(len(DuplicateList)):
+        if ParticipantName[0] == DuplicateList[i][0]:
+            if ParticipantName[1] == DuplicateList[i][1]:
+                return 'Yes'
+    return 'No'
+
+
+def ambiguousKey(data, key):  # This function creates a full-name reference 'low-confidence' key
 
     LengthOfHighConfidenceKey = key[len(key) - 1][1]
 
@@ -123,28 +138,26 @@ def ambiguousKey(data, key):
                         if str(data[i][columns + 1]).isalpha():
                             Check = ambiguouskeylooper([data[i][columns], data[i][columns + 1]], AmbiguousKey)
                             if Check == 'butterfly':
-                                AmbiguousKey.append([LengthOfHighConfidenceKey + m, data[i][columns], data[i][columns+1]])
-                                m += 1
-                                
+                                ParticipantName = [data[i][columns], data[i][columns + 1]]
+                                DuplicateCheck = DuplicateKeyLooper(ParticipantName, NewDuplicates)
+                                DuplicateCounter = 0
+                                if DuplicateCheck == 'No':
+                                    AmbiguousKeyIndex = int(LengthOfHighConfidenceKey) + int(m)
+                                    AmbiguousKey.append([AmbiguousKeyIndex, data[i][columns], data[i][columns+1]])
+                                    m += 1
+                                else:
+                                    DuplicateCounter += 1
 
-    mylist = np.asarray(AmbiguousKey)
-    
-    np.savetxt('output/AmbiguousFullNameKey' + str(testNumber)+'.csv',mylist, fmt='%s',delimiter = ',')
-                      
-    
     return AmbiguousKey
 
-def keyPosition(ParticipantName, key):
-    # now check each key row
+
+def keyPosition(ParticipantName, key):  # This function finds the index of a reference, if found
     for i in range(len(key)):
 
-        # now check each key column, first names are in cols 1,3,5,... last names col. 2,4,6,...
         for j in range(len(key[i]) - 2):
 
-            # Check the first name in the key
             if ParticipantName[0] == key[i][j + 1]:
 
-                # Check the second name IF the first name matches
                 if ParticipantName[1] == key[i][j + 2]:
                     # If the name is already in the key, return location
                     return i
@@ -152,7 +165,8 @@ def keyPosition(ParticipantName, key):
     # if the name was not already in the key (made it here), return true
     return True
 
-def keyPositionANUMBER(Anumber, key):
+
+def keyPositionANUMBER(Anumber, key):  # This function returns the index if the school number is found in the key
     # now check each key row
     for i in range(len(key)):
 
@@ -164,8 +178,8 @@ def keyPositionANUMBER(Anumber, key):
     # if the name was not already in the key (made it here), return true
     return True
 
+
 def registrarData(ANumber, keyentry, ParticipantNameList):
-    # now check each key row
 
     from Levenshtein import distance as lev
     for i in range(len(ParticipantNameList)):
@@ -183,7 +197,9 @@ def registrarData(ANumber, keyentry, ParticipantNameList):
 
     return False
 
-def edgeToAdjacency(edgeList, nodeCount="Auto"):
+
+def edgeToAdjacency(edgeList, nodeCount="Auto"):  # Converts an edge list to an adjacency matrix
+
     # find the necessary size of the adjacency matrix,
     # NOTE if isolates are not within the max of the edge list, will be left out
 
@@ -206,7 +222,8 @@ def edgeToAdjacency(edgeList, nodeCount="Auto"):
 
     return A
 
-def concat_keyPosition(ParticipantName, key):
+
+def concat_keyPosition(ParticipantName, key):  # This function is useful later on, after names have been concatenated
     # now check each key row
     for i in range(len(key)):
 
@@ -218,12 +235,15 @@ def concat_keyPosition(ParticipantName, key):
 
             if ParticipantName == concatenatedkeyname:
 
-                return key[i][1]
+                CorrectIndex = int(key[i][1]) + int(1)
+
+                return CorrectIndex
 
     # if the name was not already in the key (made it here), return true
-    return True
+    return 'NOPE'
 
-def duplicates(key, ParticipantName):
+
+def duplicates(key, ParticipantName):  # Finds duplicate rows in the key
     DuplicateRows = []
     for i in range(RowStart, len(key)):
         for j in range(len(key[0]) - 3):
@@ -233,7 +253,7 @@ def duplicates(key, ParticipantName):
 
     return DuplicateRows
 
-def removeDuplicatesFromKey(key):
+def removeDuplicatesFromKey(key):  # Removes duplicate rows from the key, consolidates nicknames if necessary
     DuplicateRows = []
     DuplicateList = []
     OriginalLocations = []
@@ -300,6 +320,8 @@ def removeDuplicatesFromKey(key):
     print("There were", len(Remove), "rows removed from the key")
     return key
 
+
+# END PRELIMINARY FUNCTIONS --------------------------------------------------------------------------------------------
 def addRegistryNames(registryLocation):
 
     # import respective libraries
@@ -325,9 +347,10 @@ def addRegistryNames(registryLocation):
 
     for i in range(len(firstcolumnsplit)):
         anumber = firstcolumnsplit[i][0]
-        if anumber[0] == "A" and len(anumber) == 9:
-            firstcolumnsplit[i][0] = anumber[1] + anumber[2] + anumber[3] + anumber[4] + anumber[5] + \
-                                                    anumber[6] + anumber[7] + anumber[8]
+        if not isinstance(anumber, float):
+            if anumber[1] == "A" and len(anumber) == 10:
+                firstcolumnsplit[i][0] = anumber[2] + anumber[3] + anumber[4] + anumber[5] + anumber[6] + \
+                                                        anumber[7] + anumber[8] + anumber[9]
 
     registry = firstcolumnsplit
 
@@ -349,22 +372,33 @@ def addRegistryNames(registryLocation):
             Duplicates.append(row)
 
     print("There are", len(Duplicates), "duplicate names in the registry. These include:", Duplicates)
-# If we want to export the duplicate names, we have to do it here (duplicates list is cleared on Line 40)
-# Remove any names that had duplicates using the duplicates list and the NewRegistry
-    firstcolumnsplittwo = []
-    DuplicateRegistryNames = []
-    for names in RemainingNames:
-        newcolumns = names.split(' ', 1)
-        firstcolumnsplittwo.append(newcolumns)
-        for i in range(len(registry)):
-            if registry[i][1] == newcolumns[0] and registry[i][2] == newcolumns[1]:
-                DuplicateRegistryNames.append(registry[i])
 
-    for rows in DuplicateRegistryNames:
+    global NewDuplicates
+    NewDuplicates = []
+
+    for names in Duplicates:
+        newcolumns = names.split(' ', 1)
+        NewDuplicates.append(newcolumns)
+
+    NewDuplicates.append(['Matt', 'Jensen'])
+    NewDuplicates.append(['Matthew', 'Jensen'])
+
+    for i in range(len(NewDuplicates)):
+        CombinedName = NewDuplicates[i][0] + NewDuplicates[i][1]
+        NewDuplicates.append([CombinedName, ''])
+
+    for rows in NewDuplicates:
         if rows in registry:
             registry.remove(rows)
 
+
     FinalRegistry = registry
+
+    for i in range(len(NewDuplicates)):  # loop through the whole list of data
+        for j in range(len(NewDuplicates[0])):  # loop through each element per row
+            if isinstance(NewDuplicates[i][j], str):
+                NewDuplicates[i][j] = NewDuplicates[i][j].lower()
+
 
     def spaceCounter(string):
 
@@ -386,40 +420,12 @@ def addRegistryNames(registryLocation):
             if string[i] == '-':
                 return True
 
-    #MultipleLastNames = []
-
     FinalRegistry.pop(RegistryRowStart - 2)
 
-   # LastNames = []
-   # for i in range(len(FinalRegistry)):
-     #   LastNames.append(FinalRegistry[i][2])
-
-    #for name in LastNames:
-     #   spaceCount = spaceCounter(name)
-     #   hyphen = hyphenDetector(name)
-      #  if spaceCount >= 1:
-       #     MultipleLastNames.append(name)
-       # if hyphen:
-          #  MultipleLastNames.append(name)
-
-   # MultipleLastNameRows = []
-    #for i in range(len(FinalRegistry)):
-     #   if FinalRegistry[i][2] in MultipleLastNames:
-       #     MultipleLastNameRows.append(FinalRegistry[i])
-
-   # for rows in MultipleLastNameRows:
-    #    if rows in FinalRegistry:
-      #      FinalRegistry.remove(rows)
-
-    #for rows in FinalRegistry:
-     #   if rows[0] == ' undefined':
-      #      FinalRegistry.remove(rows)
 
     global LengthofRegistry
     LengthofRegistry = len(FinalRegistry)
 
-    #print("There are", len(MultipleLastNames), "students with multiple last names. These include:", MultipleLastNameRows)
-    # WE PROBABLY WANT TO REMOVE HYPHENATED NAMES/DOUBLE LAST NAMES HERE!
 
     for l in range(len(FinalRegistry)):
         for m in range(len(FinalRegistry[l]) - 1):
@@ -437,18 +443,23 @@ def addRegistryNames(registryLocation):
             if check:
                 key.append([Anumber, len(key), FinalRegistry[l][1], FinalRegistry[l][2]])
 
+    key.pop(0)
     print("There are", key[len(key) - 1][1], "names in the registry that have been added to the key.")
     print("The length of the key after registry initialization is:", len(key))
+
+    for i in range(len(key)):
+        if isinstance(key[i][0], float):
+            key[i][0] = ' undefined'
+
     import csv
 
-    mypath = 'output/'
+    mypath = 'output/Iteration' + str(testNumber) + '/'
     if not os.path.isdir(mypath):
         os.makedirs(mypath)
     with open(mypath + 'Key_Registry' + str(testNumber) + '.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
         # write the .csv
         writer.writerows(key)
-
     # spit the key out
     return key
 
@@ -495,7 +506,6 @@ def addParticipantsNames(keyLocation, dataFileLocation):
             if '(' not in data[RowStart + i][ParticipantColumn]:
             # In this case, the names are in the zero column. This will change depending on the survey data formatting.
                 ParticipantNames.append([data[RowStart + i][ParticipantColumn], data[RowStart + i][NicknameColumn], data[RowStart + i][ANumberColumn]])
-
     # Split the participant Names into First Name/Last Name components
 
     dfParticipantNames = pd.DataFrame(ParticipantNames)
@@ -505,16 +515,6 @@ def addParticipantsNames(keyLocation, dataFileLocation):
     dfParticipantNames[0] = dfSplit[0]
     dfParticipantNames[1] = dfSplit[1]
     ParticipantNames = dfParticipantNames.values.tolist()
-
-    #for rows in ParticipantNames:
-     #   if isinstance(rows[1], str):
-      #      if '-' in rows[1]:
-       #         ParticipantNames.remove(rows)
-
-    #for rows in ParticipantNames:
-     #   if isinstance(rows[1], str):
-      #      if ' ' in rows[1]:
-       #         ParticipantNames.remove(rows)
 
     for i in range(len(ParticipantNames)):
         anumber = ParticipantNames[i][newANumberColumn]
@@ -552,365 +552,371 @@ def addParticipantsNames(keyLocation, dataFileLocation):
             ANUMBER = ParticipantNames[l][newANumberColumn]
             nickname = ParticipantNames[l][newNicknameColumn]
             if ParticipantName[0] != '' and ParticipantName[1] != None and ParticipantName[1] != '':
-                if isinstance(ANUMBER, str):
-                    #if not isinstance(ParticipantNames[l][newNicknameColumn], float):
-                    if not registrarData(ANUMBER, key, ParticipantNames):
-                        key.append([ANUMBER, len(key) + 1, ParticipantName[0], ParticipantName[1]])
-                        AnumberCheck = [ANUMBER, True]
-                        if not isinstance(ParticipantNames[l][newNicknameColumn], float):
-                            if "," in ParticipantNames[l][newNicknameColumn]:
-                                SplitComma = ParticipantNames[l][newNicknameColumn].split(",")
-                                for i in range(len(SplitComma)):
-                                    SplitComma[i] = SplitComma[i].replace(" ", "")
-                                for name in SplitComma:
-                                    if " " in name:
-                                        SplitCommaSpace = name.split(" ")
-                                        if SplitCommaSpace[1] != ParticipantNames[l][1]:
-                                            #AnumberCheck = [ANUMBER, True]
-                                            key[len(key) - 1].append(name)
-                                            key[len(key) - 1].append(ParticipantNames[l][1])
-
-                                            key[len(key) - 1].append(SplitCommaSpace[0])
-                                            key[len(key) - 1].append(ParticipantNames[l][1])
-
-                                            key[len(key) - 1].append(SplitCommaSpace[1])
-                                            key[len(key) - 1].append(ParticipantNames[l][1])
-
-                                            key[len(key) - 1].append(ParticipantName[0])
-                                            key[len(key) - 1].append(ParticipantNames[l][1])
-                                        else:
-                                            #AnumberCheck = [ANUMBER, True]
-                                            key[len(key) - 1].append(SplitCommaSpace[0])
-                                            key[len(key) - 1].append(SplitCommaSpace[1])
-
-                                            key[len(key) - 1].append(ParticipantName[0])
-                                            key[len(key) - 1].append(ParticipantNames[l][1])
-                                    else:
-                                        #AnumberCheck = [ANUMBER, True]
-                                        key[len(key) - 1].append(name)
-                                        key[len(key) - 1].append(ParticipantNames[l][m + 1])
-
-                                        key[len(key) - 1].append(ParticipantName[0])
-                                        key[len(key) - 1].append(ParticipantNames[l][1])
-                            if "or" in ParticipantNames[l][newNicknameColumn]:
-                                SplitOr = ParticipantNames[l][newNicknameColumn].split('or')
-                                for i in range(len(SplitOr)):
-                                    SplitOr[i] = SplitOr[i].replace(" ", "")
-                                for name in SplitOr:
-                                    if " " in name:
-                                        SplitOrSpace = name.split(" ")
-                                        if SplitOrSpace[1] != ParticipantNames[l][1]:
-                                            #AnumberCheck = [ANUMBER, True]
-                                            key[len(key) - 1].append(name)
-                                            key[len(key) - 1].append(ParticipantNames[l][1])
-
-                                            key[len(key) - 1].append(SplitOrSpace[0])
-                                            key[len(key) - 1].append(ParticipantNames[l][1])
-
-                                            key[len(key) - 1].append(SplitOrSpace[1])
-                                            key[len(key) - 1].append(ParticipantNames[l][1])
-
-                                            key[len(key) - 1].append(ParticipantName[0])
-                                            key[len(key) - 1].append(ParticipantNames[l][1])
-                                        else:
-                                            #AnumberCheck = [ANUMBER, True]
-                                            key[len(key) - 1].append(SplitOrSpace[0])
-                                            key[len(key) - 1].append(SplitOrSpace[1])
-
-                                            key[len(key) - 1].append(ParticipantName[0])
-                                            key[len(key) - 1].append(ParticipantNames[l][1])
-                                    else:
-                                        #AnumberCheck = [ANUMBER, True]
-                                        key[len(key) - 1].append(name)
-                                        key[len(key) - 1].append(ParticipantNames[l][1])
-
-                                        key[len(key) - 1].append(ParticipantName[0])
-                                        key[len(key) - 1].append(ParticipantNames[l][1])
-                            if "," not in ParticipantNames[l][newNicknameColumn] and "or" not in ParticipantNames[l][newNicknameColumn]:
-                                #AnumberCheck = [ANUMBER, True]
-                                ParticipantNames[l][newNicknameColumn] = ParticipantNames[l][newNicknameColumn].lower()
-                                if ParticipantNames[l][newNicknameColumn] != 'none':
-                                    if ParticipantNames[l][newNicknameColumn] != 'na':
-                                        if ParticipantNames[l][newNicknameColumn] != 'nan':
-                                            if ' ' not in ParticipantNames[l][newNicknameColumn]:
-                                                ParticipantNames[l][newNicknameColumn] = ParticipantNames[l][newNicknameColumn].lower()
-                                                key[len(key) - 1].insert(4, ParticipantNames[l][newNicknameColumn])
-                                                key[len(key) - 1].insert(5, ParticipantName[1])
-                                                key[len(key) - 1].insert(6, ParticipantName[0])
-                                                key[len(key) - 1].insert(7, ParticipantName[1])
-                                            if ' ' in ParticipantNames[l][newNicknameColumn]:
-                                                SplitSpace = ParticipantNames[l][newNicknameColumn].split(' ')
-                                                if SplitSpace[1] == ParticipantName[1]:
-                                                    key[len(key) - 1].insert(4, SplitSpace[0])
-                                                    key[len(key) - 1].insert(5, ParticipantName[1])
-
-                                                    key[len(key) - 1].insert(6, ParticipantName[0])
-                                                    key[len(key) - 1].insert(7, ParticipantName[1])
-
-                                                else:
-                                                    key[len(key) - 1].insert(4, SplitSpace[0])
-                                                    key[len(key) - 1].insert(5, ParticipantName[1])
-                                                    key[len(key) - 1].insert(6, SplitSpace[1])
-                                                    key[len(key) - 1].insert(7, ParticipantName[1])
-                                                    key[len(key) - 1].insert(8, ParticipantName[0])
-                                                    key[len(key) - 1].insert(9, ParticipantName[1])
-                    else:
-                        if not AnumberCheck[1]:
+                DuplicateCheck = DuplicateKeyLooper(ParticipantName, NewDuplicates)
+                adam = 0
+                if DuplicateCheck == 'No':
+                    if isinstance(ANUMBER, str):
+                        #if not isinstance(ParticipantNames[l][newNicknameColumn], float):
+                        if not registrarData(ANUMBER, key, ParticipantNames):
+                            key.append([ANUMBER, len(key) + 1, ParticipantName[0], ParticipantName[1]])
                             AnumberCheck = [ANUMBER, True]
-                            location = int(registrarData(ANUMBER, key, ParticipantNames)) - 1
-                            ColumnLocationList = []
-                            for i in range(len(key[location])):
-                                if key[location][i] == "none":
-                                    ColumnLocation = i
-                                    ColumnLocationList.append(ColumnLocation)
-                            if ColumnLocationList:
-                                ActualColumnLocation = min(ColumnLocationList)
-                            if not ColumnLocationList:
-                                ActualColumnLocation = 2
                             if not isinstance(ParticipantNames[l][newNicknameColumn], float):
                                 if "," in ParticipantNames[l][newNicknameColumn]:
                                     SplitComma = ParticipantNames[l][newNicknameColumn].split(",")
                                     for i in range(len(SplitComma)):
                                         SplitComma[i] = SplitComma[i].replace(" ", "")
-                                    if ParticipantNames[l][newNicknameColumn] not in key[location]:
-                                        for name in SplitComma:
-                                            if " " in name:
-                                                SplitCommaSpace = name.split(" ")
-                                                if SplitCommaSpace[1] != ParticipantNames[l][1]:
+                                    for name in SplitComma:
+                                        if " " in name:
+                                            SplitCommaSpace = name.split(" ")
+                                            if SplitCommaSpace[1] != ParticipantNames[l][1]:
+                                                #AnumberCheck = [ANUMBER, True]
+                                                key[len(key) - 1].append(name)
+                                                key[len(key) - 1].append(ParticipantNames[l][1])
 
-                                                    key[location].insert(ActualColumnLocation, name)
-                                                    key[location].insert(ActualColumnLocation + 1, ParticipantNames[l][1])
+                                                key[len(key) - 1].append(SplitCommaSpace[0])
+                                                key[len(key) - 1].append(ParticipantNames[l][1])
 
-                                                    key[location].insert(ActualColumnLocation + 2, SplitCommaSpace[0])
-                                                    key[location].insert(ActualColumnLocation + 3, ParticipantNames[l][1])
+                                                key[len(key) - 1].append(SplitCommaSpace[1])
+                                                key[len(key) - 1].append(ParticipantNames[l][1])
 
-                                                    key[location].insert(ActualColumnLocation + 4, SplitCommaSpace[1])
-                                                    key[location].insert(ActualColumnLocation + 5, ParticipantNames[l][1])
-
-                                                    key[location].insert(ActualColumnLocation + 6, ParticipantName[0])
-                                                    key[location].insert(ActualColumnLocation + 7,
-                                                                         ParticipantNames[l][1])
-
-                                                else:
-                                                    key[location].insert(ActualColumnLocation, SplitCommaSpace[0])
-                                                    key[location].insert(ActualColumnLocation + 1, SplitCommaSpace[1])
-
-                                                    key[location].insert(ActualColumnLocation + 2, ParticipantName[0])
-                                                    key[location].insert(ActualColumnLocation + 3,
-                                                                         ParticipantNames[l][1])
+                                                key[len(key) - 1].append(ParticipantName[0])
+                                                key[len(key) - 1].append(ParticipantNames[l][1])
                                             else:
-                                                key[location].insert(ActualColumnLocation, name)
-                                                key[location].insert(ActualColumnLocation + 1, ParticipantNames[l][1])
+                                                #AnumberCheck = [ANUMBER, True]
+                                                key[len(key) - 1].append(SplitCommaSpace[0])
+                                                key[len(key) - 1].append(SplitCommaSpace[1])
 
-                                                key[location].insert(ActualColumnLocation + 2, ParticipantName[0])
-                                                key[location].insert(ActualColumnLocation + 3,
-                                                                     ParticipantNames[l][1])
+                                                key[len(key) - 1].append(ParticipantName[0])
+                                                key[len(key) - 1].append(ParticipantNames[l][1])
+                                        else:
+                                            #AnumberCheck = [ANUMBER, True]
+                                            key[len(key) - 1].append(name)
+                                            key[len(key) - 1].append(ParticipantNames[l][m + 1])
 
+                                            key[len(key) - 1].append(ParticipantName[0])
+                                            key[len(key) - 1].append(ParticipantNames[l][1])
                                 if "or" in ParticipantNames[l][newNicknameColumn]:
-                                    location = int(registrarData(ANUMBER, key, ParticipantNames)) - 1
                                     SplitOr = ParticipantNames[l][newNicknameColumn].split('or')
                                     for i in range(len(SplitOr)):
                                         SplitOr[i] = SplitOr[i].replace(" ", "")
-                                    ColumnLocationList = []
-                                    for i in range(len(key[location])):
-                                        if key[location][i] == "none":
-                                            ColumnLocation = i
-                                            ColumnLocationList.append(ColumnLocation)
-                                    if ColumnLocationList != []:
-                                        ActualColumnLocation = min(ColumnLocationList)
-                                    if ParticipantNames[l][newNicknameColumn] not in key[location]:
-                                        for name in SplitOr:
-                                            if " " in name:
-                                                SplitOrSpace = name.split(" ")
-                                                if SplitOrSpace[1] != ParticipantNames[l][1]:
+                                    for name in SplitOr:
+                                        if " " in name:
+                                            SplitOrSpace = name.split(" ")
+                                            if SplitOrSpace[1] != ParticipantNames[l][1]:
+                                                #AnumberCheck = [ANUMBER, True]
+                                                key[len(key) - 1].append(name)
+                                                key[len(key) - 1].append(ParticipantNames[l][1])
 
+                                                key[len(key) - 1].append(SplitOrSpace[0])
+                                                key[len(key) - 1].append(ParticipantNames[l][1])
+
+                                                key[len(key) - 1].append(SplitOrSpace[1])
+                                                key[len(key) - 1].append(ParticipantNames[l][1])
+
+                                                key[len(key) - 1].append(ParticipantName[0])
+                                                key[len(key) - 1].append(ParticipantNames[l][1])
+                                            else:
+                                                #AnumberCheck = [ANUMBER, True]
+                                                key[len(key) - 1].append(SplitOrSpace[0])
+                                                key[len(key) - 1].append(SplitOrSpace[1])
+
+                                                key[len(key) - 1].append(ParticipantName[0])
+                                                key[len(key) - 1].append(ParticipantNames[l][1])
+                                        else:
+                                            #AnumberCheck = [ANUMBER, True]
+                                            key[len(key) - 1].append(name)
+                                            key[len(key) - 1].append(ParticipantNames[l][1])
+
+                                            key[len(key) - 1].append(ParticipantName[0])
+                                            key[len(key) - 1].append(ParticipantNames[l][1])
+                                if "," not in ParticipantNames[l][newNicknameColumn] and "or" not in ParticipantNames[l][newNicknameColumn]:
+                                    #AnumberCheck = [ANUMBER, True]
+                                    ParticipantNames[l][newNicknameColumn] = ParticipantNames[l][newNicknameColumn].lower()
+                                    if ParticipantNames[l][newNicknameColumn] != 'none':
+                                        if ParticipantNames[l][newNicknameColumn] != 'na':
+                                            if ParticipantNames[l][newNicknameColumn] != 'nan':
+                                                if ' ' not in ParticipantNames[l][newNicknameColumn]:
+                                                    ParticipantNames[l][newNicknameColumn] = ParticipantNames[l][newNicknameColumn].lower()
+                                                    key[len(key) - 1].insert(4, ParticipantNames[l][newNicknameColumn])
+                                                    key[len(key) - 1].insert(5, ParticipantName[1])
+                                                    key[len(key) - 1].insert(6, ParticipantName[0])
+                                                    key[len(key) - 1].insert(7, ParticipantName[1])
+                                                if ' ' in ParticipantNames[l][newNicknameColumn]:
+                                                    SplitSpace = ParticipantNames[l][newNicknameColumn].split(' ')
+                                                    if SplitSpace[1] == ParticipantName[1]:
+                                                        key[len(key) - 1].insert(4, SplitSpace[0])
+                                                        key[len(key) - 1].insert(5, ParticipantName[1])
+
+                                                        key[len(key) - 1].insert(6, ParticipantName[0])
+                                                        key[len(key) - 1].insert(7, ParticipantName[1])
+
+                                                    else:
+                                                        key[len(key) - 1].insert(4, SplitSpace[0])
+                                                        key[len(key) - 1].insert(5, ParticipantName[1])
+                                                        key[len(key) - 1].insert(6, SplitSpace[1])
+                                                        key[len(key) - 1].insert(7, ParticipantName[1])
+                                                        key[len(key) - 1].insert(8, ParticipantName[0])
+                                                        key[len(key) - 1].insert(9, ParticipantName[1])
+                        else:
+                            if not AnumberCheck[1]:
+                                AnumberCheck = [ANUMBER, True]
+                                location = int(registrarData(ANUMBER, key, ParticipantNames)) - 1
+                                ColumnLocationList = []
+                                for i in range(len(key[location])):
+                                    if key[location][i] == "none":
+                                        ColumnLocation = i
+                                        ColumnLocationList.append(ColumnLocation)
+                                if ColumnLocationList:
+                                    ActualColumnLocation = min(ColumnLocationList)
+                                if not ColumnLocationList:
+                                    ActualColumnLocation = 2
+                                if not isinstance(ParticipantNames[l][newNicknameColumn], float):
+                                    if "," in ParticipantNames[l][newNicknameColumn]:
+                                        SplitComma = ParticipantNames[l][newNicknameColumn].split(",")
+                                        for i in range(len(SplitComma)):
+                                            SplitComma[i] = SplitComma[i].replace(" ", "")
+                                        if ParticipantNames[l][newNicknameColumn] not in key[location]:
+                                            for name in SplitComma:
+                                                if " " in name:
+                                                    SplitCommaSpace = name.split(" ")
+                                                    if SplitCommaSpace[1] != ParticipantNames[l][1]:
+
+                                                        key[location].insert(ActualColumnLocation, name)
+                                                        key[location].insert(ActualColumnLocation + 1, ParticipantNames[l][1])
+
+                                                        key[location].insert(ActualColumnLocation + 2, SplitCommaSpace[0])
+                                                        key[location].insert(ActualColumnLocation + 3, ParticipantNames[l][1])
+
+                                                        key[location].insert(ActualColumnLocation + 4, SplitCommaSpace[1])
+                                                        key[location].insert(ActualColumnLocation + 5, ParticipantNames[l][1])
+
+                                                        key[location].insert(ActualColumnLocation + 6, ParticipantName[0])
+                                                        key[location].insert(ActualColumnLocation + 7,
+                                                                             ParticipantNames[l][1])
+
+                                                    else:
+                                                        key[location].insert(ActualColumnLocation, SplitCommaSpace[0])
+                                                        key[location].insert(ActualColumnLocation + 1, SplitCommaSpace[1])
+
+                                                        key[location].insert(ActualColumnLocation + 2, ParticipantName[0])
+                                                        key[location].insert(ActualColumnLocation + 3,
+                                                                             ParticipantNames[l][1])
+                                                else:
                                                     key[location].insert(ActualColumnLocation, name)
                                                     key[location].insert(ActualColumnLocation + 1, ParticipantNames[l][1])
 
-                                                    key[location].insert(ActualColumnLocation + 2, SplitOrSpace[0])
-                                                    key[location].insert(ActualColumnLocation + 3, ParticipantNames[l][1])
-
-                                                    key[location].insert(ActualColumnLocation + 4, SplitOrSpace[1])
-                                                    key[location].insert(ActualColumnLocation + 5, ParticipantNames[l][1])
-
-                                                    key[location].insert(ActualColumnLocation + 6, ParticipantName[0])
-                                                    key[location].insert(ActualColumnLocation + 7,
+                                                    key[location].insert(ActualColumnLocation + 2, ParticipantName[0])
+                                                    key[location].insert(ActualColumnLocation + 3,
                                                                          ParticipantNames[l][1])
+
+                                    if "or" in ParticipantNames[l][newNicknameColumn]:
+                                        location = int(registrarData(ANUMBER, key, ParticipantNames)) - 1
+                                        SplitOr = ParticipantNames[l][newNicknameColumn].split('or')
+                                        for i in range(len(SplitOr)):
+                                            SplitOr[i] = SplitOr[i].replace(" ", "")
+                                        ColumnLocationList = []
+                                        for i in range(len(key[location])):
+                                            if key[location][i] == "none":
+                                                ColumnLocation = i
+                                                ColumnLocationList.append(ColumnLocation)
+                                        if ColumnLocationList != []:
+                                            ActualColumnLocation = min(ColumnLocationList)
+                                        if ParticipantNames[l][newNicknameColumn] not in key[location]:
+                                            for name in SplitOr:
+                                                if " " in name:
+                                                    SplitOrSpace = name.split(" ")
+                                                    if SplitOrSpace[1] != ParticipantNames[l][1]:
+
+                                                        key[location].insert(ActualColumnLocation, name)
+                                                        key[location].insert(ActualColumnLocation + 1, ParticipantNames[l][1])
+
+                                                        key[location].insert(ActualColumnLocation + 2, SplitOrSpace[0])
+                                                        key[location].insert(ActualColumnLocation + 3, ParticipantNames[l][1])
+
+                                                        key[location].insert(ActualColumnLocation + 4, SplitOrSpace[1])
+                                                        key[location].insert(ActualColumnLocation + 5, ParticipantNames[l][1])
+
+                                                        key[location].insert(ActualColumnLocation + 6, ParticipantName[0])
+                                                        key[location].insert(ActualColumnLocation + 7,
+                                                                             ParticipantNames[l][1])
+                                                    else:
+                                                        key[location].insert(ActualColumnLocation, SplitOrSpace[0])
+                                                        key[location].insert(ActualColumnLocation + 1, SplitOrSpace[1])
+
+                                                        key[location].insert(ActualColumnLocation + 2, ParticipantName[0])
+                                                        key[location].insert(ActualColumnLocation + 3,
+                                                                             ParticipantNames[l][1])
                                                 else:
-                                                    key[location].insert(ActualColumnLocation, SplitOrSpace[0])
-                                                    key[location].insert(ActualColumnLocation + 1, SplitOrSpace[1])
+                                                    key[location].insert(ActualColumnLocation, name)
+                                                    key[location].insert(ActualColumnLocation + 1, ParticipantNames[l][1])
 
                                                     key[location].insert(ActualColumnLocation + 2, ParticipantName[0])
                                                     key[location].insert(ActualColumnLocation + 3,
                                                                          ParticipantNames[l][1])
+
+                                    if "," not in ParticipantNames[l][newNicknameColumn] and "or" not in ParticipantNames[l][
+                                        newNicknameColumn]:
+                                        location = int(registrarData(ANUMBER, key, ParticipantNames)) - 1
+                                        ColumnLocationList = []
+                                        for i in range(len(key[location])):
+                                            if key[location][i] == "none":
+                                                ColumnLocation = i
+                                                ColumnLocationList.append(ColumnLocation)
                                             else:
-                                                key[location].insert(ActualColumnLocation, name)
-                                                key[location].insert(ActualColumnLocation + 1, ParticipantNames[l][1])
-
-                                                key[location].insert(ActualColumnLocation + 2, ParticipantName[0])
-                                                key[location].insert(ActualColumnLocation + 3,
-                                                                     ParticipantNames[l][1])
-
-                                if "," not in ParticipantNames[l][newNicknameColumn] and "or" not in ParticipantNames[l][
-                                    newNicknameColumn]:
-                                    location = int(registrarData(ANUMBER, key, ParticipantNames)) - 1
-                                    ColumnLocationList = []
-                                    for i in range(len(key[location])):
-                                        if key[location][i] == "none":
-                                            ColumnLocation = i
-                                            ColumnLocationList.append(ColumnLocation)
-                                        else:
-                                            ActualColumnLocation = 4
-                                    if ColumnLocationList != []:
-                                        ActualColumnLocation = min(ColumnLocationList)
-                                    if not isinstance(location, float):
-                                        if ParticipantNames[l][newNicknameColumn] != 'none':
-                                            if ' ' not in ParticipantNames[l][newNicknameColumn]:
-                                                ParticipantNames[l][newNicknameColumn] = ParticipantNames[l][newNicknameColumn].lower()
-                                                key[location].insert(ActualColumnLocation, ParticipantNames[l][newNicknameColumn])
-                                                key[location].insert(ActualColumnLocation + 1, ParticipantName[1])
-                                                key[location].insert(ActualColumnLocation + 2, ParticipantName[0])
-                                                key[location].insert(ActualColumnLocation + 3, ParticipantName[1])
-                                                key[location].insert(ActualColumnLocation + 4, ParticipantName[0])
-                                                key[location].insert(ActualColumnLocation + 5,
-                                                                     ParticipantNames[l][1])
-                                            if ' ' in ParticipantNames[l][newNicknameColumn]:
-                                                SplitSpace = ParticipantNames[l][newNicknameColumn].split(' ')
-                                                if SplitSpace[1] == ParticipantName[1]:
-                                                    key[location].insert(ActualColumnLocation, SplitSpace[0])
+                                                ActualColumnLocation = 4
+                                        if ColumnLocationList != []:
+                                            ActualColumnLocation = min(ColumnLocationList)
+                                        if not isinstance(location, float):
+                                            if ParticipantNames[l][newNicknameColumn] != 'none':
+                                                if ' ' not in ParticipantNames[l][newNicknameColumn]:
+                                                    ParticipantNames[l][newNicknameColumn] = ParticipantNames[l][newNicknameColumn].lower()
+                                                    key[location].insert(ActualColumnLocation, ParticipantNames[l][newNicknameColumn])
                                                     key[location].insert(ActualColumnLocation + 1, ParticipantName[1])
                                                     key[location].insert(ActualColumnLocation + 2, ParticipantName[0])
-                                                    key[location].insert(ActualColumnLocation + 3,
-                                                                         ParticipantNames[l][1])
-                                                else:
-                                                    key[location].insert(ActualColumnLocation, SplitSpace[0])
-                                                    key[location].insert(ActualColumnLocation + 1, ParticipantName[1])
-                                                    key[location].insert(ActualColumnLocation + 2, SplitSpace[1])
                                                     key[location].insert(ActualColumnLocation + 3, ParticipantName[1])
                                                     key[location].insert(ActualColumnLocation + 4, ParticipantName[0])
                                                     key[location].insert(ActualColumnLocation + 5,
                                                                          ParticipantNames[l][1])
+                                                if ' ' in ParticipantNames[l][newNicknameColumn]:
+                                                    SplitSpace = ParticipantNames[l][newNicknameColumn].split(' ')
+                                                    if SplitSpace[1] == ParticipantName[1]:
+                                                        key[location].insert(ActualColumnLocation, SplitSpace[0])
+                                                        key[location].insert(ActualColumnLocation + 1, ParticipantName[1])
+                                                        key[location].insert(ActualColumnLocation + 2, ParticipantName[0])
+                                                        key[location].insert(ActualColumnLocation + 3,
+                                                                             ParticipantNames[l][1])
+                                                    else:
+                                                        key[location].insert(ActualColumnLocation, SplitSpace[0])
+                                                        key[location].insert(ActualColumnLocation + 1, ParticipantName[1])
+                                                        key[location].insert(ActualColumnLocation + 2, SplitSpace[1])
+                                                        key[location].insert(ActualColumnLocation + 3, ParticipantName[1])
+                                                        key[location].insert(ActualColumnLocation + 4, ParticipantName[0])
+                                                        key[location].insert(ActualColumnLocation + 5,
+                                                                             ParticipantNames[l][1])
+                                    else:
+                                        key[location].insert(ActualColumnLocation, ParticipantName[0])
+                                        key[location].insert(ActualColumnLocation + 1, ParticipantName[1])
                                 else:
                                     key[location].insert(ActualColumnLocation, ParticipantName[0])
                                     key[location].insert(ActualColumnLocation + 1, ParticipantName[1])
-                            else:
-                                key[location].insert(ActualColumnLocation, ParticipantName[0])
-                                key[location].insert(ActualColumnLocation + 1, ParticipantName[1])
-    # -----------------------------------------------------------      ------------------------------------------------------
-                else:
-                    check = looper(ParticipantName, key)
-                    if not check:
-                        location = keyPosition(ParticipantName, key)
-                        ColumnLocationList = []
-                        for i in range(len(key[location])):
-                            if key[location][i] == "none":
-                                ColumnLocation = i
-                                ColumnLocationList.append(ColumnLocation)
-                        if ColumnLocationList != []:
-                            ActualColumnLocation = min(ColumnLocationList)
-                        else:
-                            ActualColumnLocation = 4
-                        key[location].insert(ActualColumnLocation, ParticipantName[0])
-                        key[location].insert(ActualColumnLocation + 1, ParticipantName[1])
+
+        # --------------------------------------------------------------------------------------------------------------
                     else:
-                        location = keyPosition(ParticipantName, key)
-                        if not isinstance(ParticipantNames[l][newNicknameColumn], float):
-                            if "," in ParticipantNames[l][newNicknameColumn]:
-                                SplitComma = ParticipantNames[l][newNicknameColumn].split(",")
-                                for i in range(len(SplitComma)):
-                                    SplitComma[i] = SplitComma[i].replace(" ", "")
-                                for name in SplitComma:
-                                    if " " in name:
-                                        SplitCommaSpace = name.split(" ")
-                                        if SplitCommaSpace[1] != ParticipantNames[l][1]:
+                        check = looper(ParticipantName, key)
+                        if not check:
+                            location = keyPosition(ParticipantName, key)
+                            ColumnLocationList = []
+                            for i in range(len(key[location])):
+                                if key[location][i] == "none":
+                                    ColumnLocation = i
+                                    ColumnLocationList.append(ColumnLocation)
+                            if ColumnLocationList != []:
+                                ActualColumnLocation = min(ColumnLocationList)
+                            else:
+                                ActualColumnLocation = 4
+                            key[location].insert(ActualColumnLocation, ParticipantName[0])
+                            key[location].insert(ActualColumnLocation + 1, ParticipantName[1])
+                        else:
+                            location = keyPosition(ParticipantName, key)
+                            if not isinstance(ParticipantNames[l][newNicknameColumn], float):
+                                if "," in ParticipantNames[l][newNicknameColumn]:
+                                    SplitComma = ParticipantNames[l][newNicknameColumn].split(",")
+                                    for i in range(len(SplitComma)):
+                                        SplitComma[i] = SplitComma[i].replace(" ", "")
+                                    for name in SplitComma:
+                                        if " " in name:
+                                            SplitCommaSpace = name.split(" ")
+                                            if SplitCommaSpace[1] != ParticipantNames[l][1]:
+                                                #AnumberCheck = [ANUMBER, True]
+                                                key[len(key) - 1].append(name)
+                                                key[len(key) - 1].append(ParticipantNames[l][1])
+
+                                                key[len(key) - 1].append(SplitCommaSpace[0])
+                                                key[len(key) - 1].append(ParticipantNames[l][1])
+
+                                                key[len(key) - 1].append(SplitCommaSpace[1])
+                                                key[len(key) - 1].append(ParticipantNames[l][1])
+
+                                                key[len(key) - 1].append(ParticipantName[0])
+                                                key[len(key) - 1].append(ParticipantNames[l][1])
+                                            else:
+                                                #AnumberCheck = [ANUMBER, True]
+                                                key[len(key) - 1].append(SplitCommaSpace[0])
+                                                key[len(key) - 1].append(SplitCommaSpace[1])
+
+                                                key[len(key) - 1].append(ParticipantName[0])
+                                                key[len(key) - 1].append(ParticipantNames[l][1])
+                                        else:
+                                            #AnumberCheck = [ANUMBER, True]
+                                            key[len(key) - 1].append(name)
+                                            key[len(key) - 1].append(ParticipantNames[l][m + 1])
+
+                                            key[len(key) - 1].append(ParticipantName[0])
+                                            key[len(key) - 1].append(ParticipantNames[l][1])
+                                if "or" in ParticipantNames[l][newNicknameColumn]:
+                                    SplitOr = ParticipantNames[l][newNicknameColumn].split('or')
+                                    for i in range(len(SplitOr)):
+                                        SplitOr[i] = SplitOr[i].replace(" ", "")
+                                    for name in SplitOr:
+                                        if " " in name:
+                                            SplitOrSpace = name.split(" ")
+                                            if SplitOrSpace[1] != ParticipantNames[l][1]:
+                                                #AnumberCheck = [ANUMBER, True]
+                                                key[len(key) - 1].append(name)
+                                                key[len(key) - 1].append(ParticipantNames[l][1])
+
+                                                key[len(key) - 1].append(SplitOrSpace[0])
+                                                key[len(key) - 1].append(ParticipantNames[l][1])
+
+                                                key[len(key) - 1].append(SplitOrSpace[1])
+                                                key[len(key) - 1].append(ParticipantNames[l][1])
+
+                                                key[len(key) - 1].append(ParticipantName[0])
+                                                key[len(key) - 1].append(ParticipantNames[l][1])
+                                            else:
+                                                #AnumberCheck = [ANUMBER, True]
+                                                key[len(key) - 1].append(SplitOrSpace[0])
+                                                key[len(key) - 1].append(SplitOrSpace[1])
+
+                                                key[len(key) - 1].append(ParticipantName[0])
+                                                key[len(key) - 1].append(ParticipantNames[l][1])
+                                        else:
                                             #AnumberCheck = [ANUMBER, True]
                                             key[len(key) - 1].append(name)
                                             key[len(key) - 1].append(ParticipantNames[l][1])
 
-                                            key[len(key) - 1].append(SplitCommaSpace[0])
-                                            key[len(key) - 1].append(ParticipantNames[l][1])
-
-                                            key[len(key) - 1].append(SplitCommaSpace[1])
-                                            key[len(key) - 1].append(ParticipantNames[l][1])
-
                                             key[len(key) - 1].append(ParticipantName[0])
                                             key[len(key) - 1].append(ParticipantNames[l][1])
-                                        else:
-                                            #AnumberCheck = [ANUMBER, True]
-                                            key[len(key) - 1].append(SplitCommaSpace[0])
-                                            key[len(key) - 1].append(SplitCommaSpace[1])
-
-                                            key[len(key) - 1].append(ParticipantName[0])
-                                            key[len(key) - 1].append(ParticipantNames[l][1])
-                                    else:
-                                        #AnumberCheck = [ANUMBER, True]
-                                        key[len(key) - 1].append(name)
-                                        key[len(key) - 1].append(ParticipantNames[l][m + 1])
-
-                                        key[len(key) - 1].append(ParticipantName[0])
-                                        key[len(key) - 1].append(ParticipantNames[l][1])
-                            if "or" in ParticipantNames[l][newNicknameColumn]:
-                                SplitOr = ParticipantNames[l][newNicknameColumn].split('or')
-                                for i in range(len(SplitOr)):
-                                    SplitOr[i] = SplitOr[i].replace(" ", "")
-                                for name in SplitOr:
-                                    if " " in name:
-                                        SplitOrSpace = name.split(" ")
-                                        if SplitOrSpace[1] != ParticipantNames[l][1]:
-                                            #AnumberCheck = [ANUMBER, True]
-                                            key[len(key) - 1].append(name)
-                                            key[len(key) - 1].append(ParticipantNames[l][1])
-
-                                            key[len(key) - 1].append(SplitOrSpace[0])
-                                            key[len(key) - 1].append(ParticipantNames[l][1])
-
-                                            key[len(key) - 1].append(SplitOrSpace[1])
-                                            key[len(key) - 1].append(ParticipantNames[l][1])
-
-                                            key[len(key) - 1].append(ParticipantName[0])
-                                            key[len(key) - 1].append(ParticipantNames[l][1])
-                                        else:
-                                            #AnumberCheck = [ANUMBER, True]
-                                            key[len(key) - 1].append(SplitOrSpace[0])
-                                            key[len(key) - 1].append(SplitOrSpace[1])
-
-                                            key[len(key) - 1].append(ParticipantName[0])
-                                            key[len(key) - 1].append(ParticipantNames[l][1])
-                                    else:
-                                        #AnumberCheck = [ANUMBER, True]
-                                        key[len(key) - 1].append(name)
-                                        key[len(key) - 1].append(ParticipantNames[l][1])
-
-                                        key[len(key) - 1].append(ParticipantName[0])
-                                        key[len(key) - 1].append(ParticipantNames[l][1])
-                            if "," not in ParticipantNames[l][newNicknameColumn] and "or" not in ParticipantNames[l][newNicknameColumn]:
-                                #AnumberCheck = [ANUMBER, True]
-                                ParticipantNames[l][newNicknameColumn] = ParticipantNames[l][newNicknameColumn].lower()
-                                if ParticipantNames[l][newNicknameColumn] != 'none':
-                                    if ParticipantNames[l][newNicknameColumn] != 'na':
-                                        if ParticipantNames[l][newNicknameColumn] != 'nan':
-                                            if ' ' not in ParticipantNames[l][newNicknameColumn]:
-                                                ParticipantNames[l][newNicknameColumn] = ParticipantNames[l][newNicknameColumn].lower()
-                                                key[len(key) - 1].insert(4, ParticipantNames[l][newNicknameColumn])
-                                                key[len(key) - 1].insert(5, ParticipantName[1])
-                                                key[len(key) - 1].insert(6, ParticipantName[0])
-                                                key[len(key) - 1].insert(7, ParticipantName[1])
-                                            if ' ' in ParticipantNames[l][newNicknameColumn]:
-                                                SplitSpace = ParticipantNames[l][newNicknameColumn].split(' ')
-                                                if SplitSpace[1] == ParticipantName[1]:
-                                                    key[len(key) - 1].insert(4, SplitSpace[0])
+                                if "," not in ParticipantNames[l][newNicknameColumn] and "or" not in ParticipantNames[l][newNicknameColumn]:
+                                    #AnumberCheck = [ANUMBER, True]
+                                    ParticipantNames[l][newNicknameColumn] = ParticipantNames[l][newNicknameColumn].lower()
+                                    if ParticipantNames[l][newNicknameColumn] != 'none':
+                                        if ParticipantNames[l][newNicknameColumn] != 'na':
+                                            if ParticipantNames[l][newNicknameColumn] != 'nan':
+                                                if ' ' not in ParticipantNames[l][newNicknameColumn]:
+                                                    ParticipantNames[l][newNicknameColumn] = ParticipantNames[l][newNicknameColumn].lower()
+                                                    key[len(key) - 1].insert(4, ParticipantNames[l][newNicknameColumn])
                                                     key[len(key) - 1].insert(5, ParticipantName[1])
                                                     key[len(key) - 1].insert(6, ParticipantName[0])
                                                     key[len(key) - 1].insert(7, ParticipantName[1])
-                                                else:
-                                                    key[len(key) - 1].insert(4, SplitSpace[0])
-                                                    key[len(key) - 1].insert(5, ParticipantName[1])
-                                                    key[len(key) - 1].insert(6, SplitSpace[1])
-                                                    key[len(key) - 1].insert(7, ParticipantName[1])
-                                                    key[len(key) - 1].insert(8, ParticipantName[0])
-                                                    key[len(key) - 1].insert(9, ParticipantName[1])
-                        else:
-                            key.append([' undefined', len(key) + 1, ParticipantName[0], ParticipantName[1]])
+                                                if ' ' in ParticipantNames[l][newNicknameColumn]:
+                                                    SplitSpace = ParticipantNames[l][newNicknameColumn].split(' ')
+                                                    if SplitSpace[1] == ParticipantName[1]:
+                                                        key[len(key) - 1].insert(4, SplitSpace[0])
+                                                        key[len(key) - 1].insert(5, ParticipantName[1])
+                                                        key[len(key) - 1].insert(6, ParticipantName[0])
+                                                        key[len(key) - 1].insert(7, ParticipantName[1])
+                                                    else:
+                                                        key[len(key) - 1].insert(4, SplitSpace[0])
+                                                        key[len(key) - 1].insert(5, ParticipantName[1])
+                                                        key[len(key) - 1].insert(6, SplitSpace[1])
+                                                        key[len(key) - 1].insert(7, ParticipantName[1])
+                                                        key[len(key) - 1].insert(8, ParticipantName[0])
+                                                        key[len(key) - 1].insert(9, ParticipantName[1])
+                            else:
+                                key.append([' undefined', len(key) + 1, ParticipantName[0], ParticipantName[1]])
+                else:
+                    adam += 1
             else:
                 SingleNameList.append(ParticipantName[0])
 
@@ -923,31 +929,41 @@ def addParticipantsNames(keyLocation, dataFileLocation):
             for o in range(MaxColumns-len(key[i])):
                 key[i].append("none")
 
+    keybeforeduplicates = key
     # Remove duplicates from the key if they have the same name
     key = removeDuplicatesFromKey(key)
 
-
+    for i in range(len(NewDuplicates)):
+        DuplicateName = [NewDuplicates[i][0], NewDuplicates[i][1]]
+        DuplicateCheck = looper(DuplicateName, key)
+        if not DuplicateCheck:
+            Position = keyPosition(DuplicateName, key)
+            key.remove(key[Position])
 
     for i in range(len(key)):
         for j in range(len(key[i]) - 2):
             if isinstance(key[i][j+2], str):
                 key[i][j+2] = alphaStrip(key[i][j+2])
 
-    #print('There are', key[len(key) - 1][1] - LengthofRegistry, "participant names (not in the registry) that have been added to the key.")
     print("The total size index of the key after being initialized is:", key[len(key) - 1][1])
     print("However, the total length of the high-confidence key is:", len(key))
 
     import csv
 
-    mypath = 'output/'
+    mypath = 'output/Iteration' + str(testNumber) + '/'
     if not os.path.isdir(mypath):
         os.makedirs(mypath)
-        
     with open(mypath + 'KeyAfterParticipantNames' + str(testNumber) + '.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
 
         # write the .csv
         writer.writerows(key)
+
+    with open(mypath + 'KeyBeforeDuplicateRemoval' + str(testNumber) + '.csv', 'w', encoding='UTF8', newline='') as f:
+        writer = csv.writer(f)
+
+        # write the .csv
+        writer.writerows(keybeforeduplicates)
 
     # spit the key out
     return key
@@ -992,10 +1008,7 @@ def replacingFunc(dataFileLocation, keyLocation):
 
     # Loop through the key and data and replace accordingly
     resolvedcount = 0
-# =============================================================================
-#     import time
-#     start = time.time()
-# =============================================================================
+
     for i in range(RowStart, len(data)):#loop through every row of the raw data
         for s in range(PeerColumnGroup1[1]-PeerColumnGroup1[0]):
             for l in range(len(key)):
@@ -1008,7 +1021,6 @@ def replacingFunc(dataFileLocation, keyLocation):
                                     data[i][s + PeerColumnGroup1[0]] = key[l][1]
                                     data[i][s + PeerColumnGroup1[0] + 1] = key[l][1]
 
-# =============================================================================
     if PeerColumnGroup2 != 0:
         for i in range(RowStart, len(data)):  # loop through every row of the raw data
             for s in range(PeerColumnGroup2[1] - PeerColumnGroup2[0]):
@@ -1035,33 +1047,32 @@ def replacingFunc(dataFileLocation, keyLocation):
                                         resolvedcount += 1
                                         data[i][q + PeerColumnGroup1[0]] = key[l][1]
                                         data[i][q + PeerColumnGroup1[0] + 1] = key[l][1]
+
 #  --------------------------- REPLACE PARTICIPANT'S SELF REPORTED NAMES --------------------------------------------  #
     b = 0
     for i in range(RowStart, len(data)):
 
         Location = concat_keyPosition(data[i][ParticipantColumn], key)
 
-        if Location:
-            if str(Location).isnumeric():
-                data[i][ParticipantColumn] = Location
-            else:
-                ANumber = data[i][ANumberColumn]
-                if not isinstance(ANumber, float):
-                    if len(ANumber) == 9:
-                        data[i][ANumberColumn] = ANumber[1] + ANumber[2] + ANumber[3] + ANumber[4] + ANumber[
-                            5] + ANumber[6] + ANumber[7] + ANumber[8]
-                    if len(ANumber) == 8:
-                        data[i][ANumberColumn] = ANumber[1] + ANumber[2] + ANumber[3] + ANumber[4] + ANumber[
-                            5] + ANumber[6] + ANumber[7]
-                ANumber = data[i][ANumberColumn]
-                NumberCheck = keyPositionANUMBER(str(ANumber), key)
-                if isinstance(NumberCheck, float):
-                    data[i][ParticipantColumn] = int(NumberCheck)
-                    b += 1
+        if str(Location).isnumeric():
+            data[i][ParticipantColumn] = int(Location) - int(1)
+        else:
+            ANumber = data[i][ANumberColumn]
+            if not isinstance(ANumber, float):
+                if len(ANumber) == 9:
+                    data[i][ANumberColumn] = ANumber[1] + ANumber[2] + ANumber[3] + ANumber[4] + ANumber[
+                        5] + ANumber[6] + ANumber[7] + ANumber[8]
+                if len(ANumber) == 8:
+                    data[i][ANumberColumn] = ANumber[1] + ANumber[2] + ANumber[3] + ANumber[4] + ANumber[
+                        5] + ANumber[6] + ANumber[7]
+            ANumber = data[i][ANumberColumn]
+            NumberCheck = keyPositionANUMBER(str(ANumber), key)
+            if isinstance(NumberCheck, float):
+                data[i][ParticipantColumn] = int(NumberCheck)
+                b += 1
 
     print("The number of first-name references resolved via school-number consolidation is:", b)
     print("The number of references in the data resolved in the exact replacement stage is (without length of key):", resolvedcount)
-   # print("Participants who did not report their last name are:", ParticipantSelfReportedNames)
 
     ambiguouscount = 0
 
@@ -1082,7 +1093,7 @@ def replacingFunc(dataFileLocation, keyLocation):
     # write the data file to a .csv
     import csv
 
-    mypath = 'output/'
+    mypath = 'output/Iteration' + str(testNumber) + '/'
     if not os.path.isdir(mypath):
         os.makedirs(mypath)
     with open(mypath +'DataforComparison'+str(testNumber)+'.csv', 'w', encoding='UTF8', newline='') as f:
@@ -1154,12 +1165,13 @@ def compareKeytoData(keyLocation, dataFileLocation):
                 data[a][b] = data[a][b].lower()
 
     CompareList = []
+    f = 0
 
     for o in range(len(data) - RowStart):
-        for columns in PeerList: # This is the number of columns of interaction data containing peer names divided by 2
+        for columns in PeerList:  # This is the number of columns of interaction data containing peer names divided by 2
 
             for i in range(len(key)):
-                    # now check each key column, first names are in cols 1,3,5,... last names col. 2,4,6,...
+                 # now check each key column, first names are in cols 1,3,5,... last names col. 2,4,6,...
                 for j in range(0, len(key[i]) - 3, 2):
 
                     AmbiguousName = [data[o+RowStart][columns], data[o+RowStart][columns + 1]]
@@ -1186,7 +1198,6 @@ def compareKeytoData(keyLocation, dataFileLocation):
                                                     ComparisonScoreFirstName[0], ComparisonScoreLastName[1],
                                                     ComparisonScoreLastName[0], ComparisonScoreLastName[1]])
 
-                            f = 0
                             if ComparisonScoreLastName[0] <= ConsolidateStringLastNameThresehold \
                                     and ComparisonScoreFirstName[0] <= ConsolidateStringFirstNameThresehold and \
                                     ComparisonScoreLastName[1] <= ConsolidatePhoneticLastNameThresehold and \
@@ -1204,17 +1215,9 @@ def compareKeytoData(keyLocation, dataFileLocation):
                            "Ambiguous Last Name", "First Name: LD", "First Name: Metaphone",
                            "Last Name: LD", "Last Name: Metaphone"])
 
-    #NumberOfHighConfidenceNames = len(key)
-
-    #print("Number of High Confidence Names is as follows:", NumberOfHighConfidenceNames)
-
-    # Length + 1 is what I need, HOWEVER, I need the index of the length
-    # Start appending those values at that index.
-
-
     # Write the "CompareList" to a csv file
     import csv
-    mypath = 'output/'
+    mypath = 'output/Iteration'+str(testNumber)+'/'
     if not os.path.isdir(mypath):
         os.makedirs(mypath)
 
@@ -1226,12 +1229,19 @@ def compareKeytoData(keyLocation, dataFileLocation):
         writer = csv.writer(f)
         writer.writerows(data)
 
-   
-    #spit these out so we can check to make sure deals work
     return [CompareList, data]
 
 
 def remainingAmbiguousNames(keyLocation, dataFileLocation):
+
+    NewDuplicates = [['ethan', 'black'], ['jonathan', 'wright'], ['jordan', 'olsen'], ['josh', 'taylor'],
+                     ['ryan', 'christensen'],
+                     ['taylor', 'davis'], ['thomas', 'hansen'], ['zachary', 'smith'], ['matt', 'jensen'],
+                     ['matthew', 'jensen'],
+                     ['ethanblack', ''], ['jonathanwright', ''], ['jordanolsen', ''], ['joshtaylor', ''],
+                     ['ryanchristensen', ''],
+                     ['taylordavis', ''], ['thomashansen', ''], ['zacharysmith', ''], ['mattjensen', ''],
+                     ['matthewjensen', '']]
 
     import pandas as pd
 
@@ -1241,7 +1251,6 @@ def remainingAmbiguousNames(keyLocation, dataFileLocation):
 
     # read in the data file of interest to a list
     data = pd.read_csv(dataFileLocation, header=None)
-    
     data = data.values.tolist()
 
     List1 = list(range(PeerColumnGroup1[0], PeerColumnGroup1[1], 2))
@@ -1251,8 +1260,6 @@ def remainingAmbiguousNames(keyLocation, dataFileLocation):
     else:
         PeerList = List1
     FullNameAmbiguousKey = ambiguousKey(data, key)
-    
-    
 
     print("There are", len(FullNameAmbiguousKey), "full-name non-participant references in the key")
 
@@ -1268,16 +1275,48 @@ def remainingAmbiguousNames(keyLocation, dataFileLocation):
     print("There were", v, "full-name references resolved with the low-confidence key")
 
     FirstNameList = []
-    ParticipantFirstNameList = []
-
+    ParticipantFirstNameList = [['placeholder', 999999]]
+    import numpy as np
     m = 1
+
+    # PLEASE NOTE:
+
+    # The following code is rendered obsolete due to the checks we enforced on it. In previous iterations, we used
+    # this code to filter names. However, we decided that names that leaked through the code (0.2% of references)
+    # were better left to manual disambiguation for best results.
+
+
+    RemainingParticipantNameList = []
     for n in range(RowStart, len(data)):
         AmbiguousNumber = FullNameAmbiguousKey[len(FullNameAmbiguousKey) - 1][0] + m
         if isinstance(data[n][ParticipantColumn], str):
+            RemainingParticipantNameList.append(data[n][ParticipantColumn])
             if not data[n][ParticipantColumn].isnumeric():
-                data[n][ParticipantColumn] = AmbiguousNumber
-                ParticipantFirstNameList.append([data[n][ParticipantColumn], AmbiguousNumber])
-                m += 1
+                Check = np.where(np.array(ParticipantFirstNameList) == str(data[n][ParticipantColumn]))
+                if Check[0].size == 0:
+                    NamesSplit = []
+                    NewList = []
+                    for names in RemainingParticipantNameList:
+                        if ' ' in names:
+                            newcolumns = names.split(' ', 1)
+                            NewList.append(newcolumns)
+                        else:
+                            NewList.append([names, ''])
+                        NamesSplit = NewList
+                    for i in range(len(NamesSplit)):
+                        ParticipantName = NamesSplit[i]
+                        DuplicateCheck = DuplicateKeyLooper(ParticipantName, NewDuplicates)
+                        DuplicateCounter = 0
+                        if DuplicateCheck == 'No':
+                            Check1 = np.where(np.array(ParticipantFirstNameList) == str(AmbiguousNumber))
+                            if Check1[0] != []:
+                                ParticipantFirstNameList.append([data[n][ParticipantColumn], AmbiguousNumber])
+                                data[n][ParticipantColumn] = AmbiguousNumber
+                                m += 1
+                        else:
+                            DuplicateCounter += 1
+                else:
+                    data[n][ParticipantColumn] = int(ParticipantFirstNameList[Check[0][0]][1])
 
     h = 0
     for o in range(RowStart, len(data)):
@@ -1298,9 +1337,6 @@ def remainingAmbiguousNames(keyLocation, dataFileLocation):
                         data[k][columns + 1] = NewAmbiguousNumber
                         o += 1
 
-    mylist = np.asarray(FirstNameList)
-    np.savetxt('output/AmbiguousFirstNameKey' + str(testNumber)+'.csv',mylist, fmt='%s',delimiter = ',')
-        
     print("There are:", h, "valid participant responses in the data")
     print("There are:", len(FirstNameList), "first-name only ambiguous references in the data")
     print("There are:", len(ParticipantFirstNameList), "first-name only ambiguous references in the data")
@@ -1312,40 +1348,44 @@ def remainingAmbiguousNames(keyLocation, dataFileLocation):
             if str(data[i][columns]) != 'nan':
                 EdgeList.append([data[i][ParticipantColumn], data[i][columns]])
 
-    for i in range(len(EdgeList)):
-        for j in range(len(EdgeList[i])):
-            EdgeList[i][j] = int(EdgeList[i][j])
-
     print("The total number of ambiguous references are:", len(EdgeList))
-    AdjacencyMatrix = edgeToAdjacency(EdgeList)
-
+    import os
     import csv
-    mypath = 'output/'
+    mypath = 'output/Iteration' + str(testNumber) + '/'
     if not os.path.isdir(mypath):
         os.makedirs(mypath)
-
-    with open(mypath+'AdjacencyMatrix'+str(testNumber)+'.csv', 'w', encoding='UTF8', newline='') as f:
-        writer = csv.writer(f)
-        writer.writerows(AdjacencyMatrix)
 
     with open(mypath+'DeIdentifiedData'+str(testNumber)+'.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
         writer.writerows(data)
 
+    with open(mypath+'FullNameAmbiguousKey'+str(testNumber)+'.csv', 'w', encoding='UTF8', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerows(FullNameAmbiguousKey)
+
+    with open(mypath+'FirstNameOnlyAmbiguousKey'+str(testNumber)+'.csv', 'w', encoding='UTF8', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerows(FirstNameList)
+
+    with open(mypath+'ParticipantsOwnAmbiguous'+str(testNumber)+'.csv', 'w', encoding='UTF8', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerows(ParticipantFirstNameList)
+
     return [data]  # AdjacencyMatrix]
+
 
 ########################################### MAIN FUNCTION LOGIC ########################################################
 
-# EVENTUALLY I NEED TO MAKE COPIES OF THE REAL DATA HERE
-mypath = 'output/'
-#check if the output files exist (due to the testNumber already being used) If so, delete prior to writing new files
+mypath = 'output/Iteration'+str(testNumber)+'/'
+
+# Check if the output files exist (due to the testNumber already being used) If so, delete prior to writing new files
 if os.path.isdir(str('Key_Registry'+str(testNumber)+'.csv')):
-   
+    
     os.remove(str('Key_Registry'+str(testNumber)+'.csv'))
     os.remove(str('KeyAfterParticipantNames'+str(testNumber)+'.csv'))
     os.remove(str('DataforComparison'+str(testNumber)+'.csv'))
     os.remove(str('DeIdentifiedData'+str(testNumber)+'.csv'))
-   
+    
 #rite the output files to the working directory of main()
 key = addRegistryNames(registryLocation)
 
