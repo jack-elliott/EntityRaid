@@ -13,6 +13,12 @@ Further reference can be found in:
 
 Weaver, A., & Elliott, J., (2022). Work in Progress: Developing Disambiguation Methods for Large-Scale Educational Network Data. Vancouver, B.C., Canada: American Society of Engineering Education
 
+The code is very basic in structure. Although satisfactory for our purposes (we did minor manual disambiguation after output), it can be improved to prevent any manual work. Please reach out to my email for questions/input/feedback
+
+adamweaver2000@gmail
+
+This code is meant to serve as an introductory module to pull from for your specific needs. Pull functions, read the script, or our paper for your benefit.
+
 # Code Structure
 
   EntityRAID's input:
